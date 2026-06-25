@@ -1,0 +1,3151 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NexoChat — La plateforme communautaire next-gen. Tchattez, créez des serveurs, rejoignez des communautés." />
+  <meta name="theme-color" content="#5865F2" />
+  <meta property="og:title" content="NexoChat" />
+  <meta property="og:description" content="La plateforme communautaire next-gen" />
+  <title>NexoChat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ================================================================
+       VARIABLES & RESET
+    ================================================================ */
+    :root {
+      --c-bg:        #0F172A;
+      --c-surface1:  #1E293B;
+      --c-surface2:  #253047;
+      --c-surface3:  #2D3E58;
+      --c-blue:      #5865F2;
+      --c-blue-dark: #4752C4;
+      --c-violet:    #7C3AED;
+      --c-violet-lt: #9D5FF0;
+      --c-green:     #22C55E;
+      --c-red:       #EF4444;
+      --c-yellow:    #F59E0B;
+      --c-text:      #F1F5F9;
+      --c-text2:     #94A3B8;
+      --c-text3:     #64748B;
+      --c-border:    rgba(148,163,184,.12);
+      --c-glass:     rgba(30,41,59,.72);
+      --c-aurora1:   rgba(88,101,242,.18);
+      --c-aurora2:   rgba(124,58,237,.14);
+      --radius-sm:   6px;
+      --radius-md:   12px;
+      --radius-lg:   18px;
+      --radius-xl:   24px;
+      --radius-full: 9999px;
+      --shadow-sm:   0 2px 8px rgba(0,0,0,.3);
+      --shadow-md:   0 4px 24px rgba(0,0,0,.45);
+      --shadow-glow: 0 0 40px rgba(88,101,242,.25);
+      --font:        'Inter', system-ui, sans-serif;
+      --font-mono:   'JetBrains Mono', monospace;
+      --sidebar-srv: 72px;
+      --sidebar-ch:  240px;
+      --trans:       .18s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--c-bg);
+      color: var(--c-text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: var(--font); cursor: pointer; border: none; background: none; }
+    input, textarea, select { font-family: var(--font); }
+    img { display: block; max-width: 100%; }
+    ::selection { background: var(--c-blue); color: #fff; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--c-surface3); border-radius: 99px; }
+
+    /* ================================================================
+       UTILITIES
+    ================================================================ */
+    .hidden  { display: none !important; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .flex    { display: flex; }
+    .flex-col { display: flex; flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-1   { gap: 4px; }
+    .gap-2   { gap: 8px; }
+    .gap-3   { gap: 12px; }
+    .gap-4   { gap: 16px; }
+    .text-sm { font-size: .8125rem; }
+    .text-xs { font-size: .75rem; }
+    .font-semibold { font-weight: 600; }
+    .font-bold     { font-weight: 700; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+
+    /* ================================================================
+       PAGES SYSTEM
+    ================================================================ */
+    .page { display: none; }
+    .page.active { display: flex; }
+
+    /* ================================================================
+       AURORA BACKGROUND
+    ================================================================ */
+    .aurora-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .aurora-bg::before, .aurora-bg::after {
+      content: ''; position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      animation: auroraFloat 12s ease-in-out infinite alternate;
+    }
+    .aurora-bg::before {
+      width: 600px; height: 600px;
+      background: var(--c-aurora1);
+      top: -200px; left: -150px;
+    }
+    .aurora-bg::after {
+      width: 500px; height: 500px;
+      background: var(--c-aurora2);
+      bottom: -200px; right: -100px;
+      animation-delay: -6s;
+    }
+    @keyframes auroraFloat {
+      0%   { transform: translate(0,0) scale(1); opacity:.6; }
+      100% { transform: translate(60px,40px) scale(1.15); opacity:1; }
+    }
+
+    /* ================================================================
+       LANDING PAGE
+    ================================================================ */
+    #page-landing {
+      flex-direction: column;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Nav */
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,23,42,.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--c-border);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.375rem; font-weight: 800; letter-spacing: -.03em;
+    }
+    .nav-logo .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--c-blue), var(--c-violet));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .nav-logo .logo-gradient {
+      background: linear-gradient(135deg, var(--c-blue), var(--c-violet-lt));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      color: var(--c-text2); font-size: .9rem; font-weight: 500;
+      transition: color var(--trans);
+    }
+    .nav-links a:hover { color: var(--c-text); }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .lang-select {
+      background: var(--c-surface1); color: var(--c-text2);
+      border: 1px solid var(--c-border); border-radius: var(--radius-sm);
+      padding: 6px 10px; font-size: .8rem; cursor: pointer;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 22px; border-radius: var(--radius-sm);
+      font-size: .9rem; font-weight: 600;
+      transition: all var(--trans);
+      position: relative; overflow: hidden;
+    }
+    .btn::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,.08); opacity: 0;
+      transition: opacity var(--trans);
+    }
+    .btn:hover::after { opacity: 1; }
+    .btn-ghost { color: var(--c-text2); }
+    .btn-ghost:hover { color: var(--c-text); }
+    .btn-primary {
+      background: var(--c-blue); color: #fff;
+      box-shadow: 0 0 0 0 rgba(88,101,242,.4);
+    }
+    .btn-primary:hover { background: var(--c-blue-dark); box-shadow: 0 0 0 4px rgba(88,101,242,.2); }
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--c-blue), var(--c-violet));
+      color: #fff;
+      box-shadow: var(--shadow-glow);
+    }
+    .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(88,101,242,.4); }
+    .btn-outline {
+      border: 1.5px solid var(--c-border); color: var(--c-text2);
+    }
+    .btn-outline:hover { border-color: var(--c-blue); color: var(--c-text); }
+    .btn-lg { padding: 14px 32px; font-size: 1rem; border-radius: var(--radius-md); }
+    .btn-sm { padding: 6px 14px; font-size: .8rem; }
+    .btn-icon { padding: 8px; border-radius: var(--radius-sm); width: 36px; height: 36px; }
+
+    /* Hero */
+    .hero {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 80px 24px 60px;
+      gap: 32px; position: relative;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(88,101,242,.12);
+      border: 1px solid rgba(88,101,242,.3);
+      color: var(--c-blue); padding: 6px 16px;
+      border-radius: var(--radius-full); font-size: .8125rem; font-weight: 600;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--c-blue);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .4; transform: scale(.8); }
+    }
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 900; line-height: 1.05;
+      letter-spacing: -.04em; max-width: 800px;
+    }
+    .hero-title .gradient {
+      background: linear-gradient(135deg, var(--c-blue) 20%, var(--c-violet-lt) 80%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--c-text2); max-width: 560px; line-height: 1.7;
+    }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .hero-preview {
+      width: 100%; max-width: 900px;
+      background: var(--c-surface1);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-md), 0 0 80px rgba(88,101,242,.15);
+    }
+    .preview-bar {
+      padding: 12px 16px;
+      background: var(--c-surface2);
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .preview-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .preview-body {
+      display: flex; height: 320px;
+    }
+    .preview-servers {
+      width: 64px; background: var(--c-bg);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 12px 0; gap: 8px;
+      border-right: 1px solid var(--c-border);
+    }
+    .preview-srv-icon {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--c-blue), var(--c-violet));
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700; color: #fff;
+      cursor: pointer; transition: border-radius var(--trans);
+    }
+    .preview-srv-icon:hover { border-radius: 14px; }
+    .preview-srv-icon.active { border-radius: 14px; }
+    .preview-channels {
+      width: 180px; background: var(--c-surface1);
+      padding: 12px 8px; display: flex; flex-direction: column; gap: 4px;
+      border-right: 1px solid var(--c-border);
+      overflow: hidden;
+    }
+    .preview-ch-label { font-size: .65rem; color: var(--c-text3); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 4px 6px; }
+    .preview-ch {
+      padding: 6px 8px; border-radius: 6px;
+      color: var(--c-text3); font-size: .8rem;
+      display: flex; align-items: center; gap: 6px;
+      cursor: pointer; transition: all var(--trans);
+    }
+    .preview-ch.active { background: var(--c-surface3); color: var(--c-text); }
+    .preview-ch:hover { color: var(--c-text2); background: var(--c-surface2); }
+    .preview-messages { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
+    .preview-msg { display: flex; gap: 10px; animation: msgIn .4s ease; }
+    @keyframes msgIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .preview-avatar {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700;
+    }
+    .preview-msg-body { display: flex; flex-direction: column; gap: 3px; }
+    .preview-msg-name { font-size: .8rem; font-weight: 600; }
+    .preview-msg-text { font-size: .82rem; color: var(--c-text2); line-height: 1.5; }
+    .preview-input {
+      margin: 0 16px 16px;
+      background: var(--c-surface2); border-radius: 10px;
+      padding: 12px 16px; color: var(--c-text3); font-size: .85rem;
+      border: 1px solid var(--c-border);
+    }
+
+    /* Stats */
+    .stats-section { padding: 60px 48px; display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+    .stat-card {
+      background: var(--c-glass); backdrop-filter: blur(20px);
+      border: 1px solid var(--c-border); border-radius: var(--radius-lg);
+      padding: 32px 40px; text-align: center; min-width: 180px;
+      transition: transform var(--trans);
+    }
+    .stat-card:hover { transform: translateY(-4px); }
+    .stat-num { font-size: 2.5rem; font-weight: 900; line-height: 1; }
+    .stat-num.blue   { color: var(--c-blue); }
+    .stat-num.violet { color: var(--c-violet-lt); }
+    .stat-num.green  { color: var(--c-green); }
+    .stat-label { color: var(--c-text2); margin-top: 6px; font-size: .9rem; }
+
+    /* Features */
+    .features-section { padding: 60px 48px; }
+    .section-label { font-size: .8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--c-blue); margin-bottom: 12px; text-align: center; }
+    .section-title { font-size: clamp(1.75rem, 3.5vw, 2.5rem); font-weight: 800; text-align: center; letter-spacing: -.03em; margin-bottom: 48px; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+    .feature-card {
+      background: var(--c-glass); backdrop-filter: blur(16px);
+      border: 1px solid var(--c-border); border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      transition: all var(--trans);
+    }
+    .feature-card:hover { border-color: rgba(88,101,242,.3); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 16px;
+    }
+    .feature-title { font-weight: 700; margin-bottom: 8px; }
+    .feature-desc { color: var(--c-text2); font-size: .875rem; line-height: 1.65; }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--c-border);
+      padding: 32px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--c-text3); font-size: .85rem; flex-wrap: wrap; gap: 16px;
+    }
+
+    /* ================================================================
+       AUTH PAGES (login / register)
+    ================================================================ */
+    #page-login, #page-register {
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+      position: relative; z-index: 1;
+    }
+    .auth-card {
+      background: var(--c-glass); backdrop-filter: blur(30px);
+      border: 1px solid var(--c-border); border-radius: var(--radius-xl);
+      padding: 40px; width: 100%; max-width: 440px;
+      box-shadow: var(--shadow-md);
+    }
+    .auth-logo { text-align: center; margin-bottom: 8px; font-size: 1.5rem; font-weight: 800; }
+    .auth-logo .gradient { background: linear-gradient(135deg, var(--c-blue), var(--c-violet-lt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .auth-subtitle { text-align: center; color: var(--c-text2); margin-bottom: 28px; font-size: .9rem; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: .82rem; font-weight: 600; color: var(--c-text2); margin-bottom: 6px; letter-spacing: .02em; }
+    .form-input {
+      width: 100%; padding: 12px 16px;
+      background: var(--c-surface2); border: 1.5px solid var(--c-border);
+      border-radius: var(--radius-sm); color: var(--c-text); font-size: .9rem;
+      transition: border-color var(--trans);
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--c-blue); }
+    .form-input::placeholder { color: var(--c-text3); }
+    .social-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .social-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--c-border);
+      color: var(--c-text); font-size: .88rem; font-weight: 500;
+      transition: all var(--trans); cursor: pointer;
+      background: var(--c-surface2);
+    }
+    .social-btn:hover { border-color: var(--c-blue); background: var(--c-surface3); }
+    .social-icon { font-size: 1.1rem; }
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--c-text3); font-size: .8rem; margin-bottom: 20px;
+    }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--c-border); }
+    .auth-link { text-align: center; margin-top: 20px; font-size: .85rem; color: var(--c-text2); }
+    .auth-link a { color: var(--c-blue); font-weight: 600; }
+    .auth-link a:hover { text-decoration: underline; }
+    .password-wrapper { position: relative; }
+    .password-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--c-text3); cursor: pointer; font-size: .85rem;
+      transition: color var(--trans);
+    }
+    .password-toggle:hover { color: var(--c-text); }
+
+    /* ================================================================
+       DASHBOARD
+    ================================================================ */
+    #page-dashboard {
+      flex-direction: column;
+      min-height: 100vh;
+      position: relative; z-index: 1;
+    }
+    .app-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 28px;
+      background: var(--c-glass); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--c-border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .app-nav .nav-logo { font-size: 1.1rem; }
+    .app-nav .nav-logo .logo-icon { width: 30px; height: 30px; font-size: .85rem; }
+    .user-menu {
+      display: flex; align-items: center; gap: 12px; cursor: pointer;
+    }
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--c-blue), var(--c-violet));
+    }
+    .user-name { font-size: .875rem; font-weight: 600; }
+    .user-status { font-size: .72rem; color: var(--c-green); }
+    .notification-btn {
+      position: relative; color: var(--c-text2);
+      transition: color var(--trans);
+    }
+    .notification-btn:hover { color: var(--c-text); }
+    .notif-badge {
+      position: absolute; top: -4px; right: -4px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--c-red); font-size: .6rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .dash-body { flex: 1; display: grid; grid-template-columns: 260px 1fr; min-height: 0; }
+    .dash-sidebar {
+      background: var(--c-surface1);
+      border-right: 1px solid var(--c-border);
+      padding: 20px 12px; display: flex; flex-direction: column; gap: 8px;
+      overflow-y: auto;
+    }
+    .dash-sidebar-title { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--c-text3); font-weight: 700; padding: 4px 8px; }
+    .dash-nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      color: var(--c-text2); font-size: .875rem; font-weight: 500;
+      cursor: pointer; transition: all var(--trans);
+    }
+    .dash-nav-item:hover { background: var(--c-surface2); color: var(--c-text); }
+    .dash-nav-item.active { background: rgba(88,101,242,.18); color: var(--c-blue); }
+    .dash-nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .dash-main { padding: 32px; overflow-y: auto; }
+    .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 20px; margin-top: 24px; }
+    .dash-card {
+      background: var(--c-glass); backdrop-filter: blur(16px);
+      border: 1px solid var(--c-border); border-radius: var(--radius-lg);
+      padding: 24px; transition: all var(--trans);
+    }
+    .dash-card:hover { border-color: rgba(88,101,242,.3); transform: translateY(-2px); }
+    .dash-card-title { font-weight: 700; margin-bottom: 6px; }
+    .dash-card-meta { color: var(--c-text2); font-size: .8rem; margin-bottom: 16px; }
+    .server-list { display: flex; flex-direction: column; gap: 8px; }
+    .server-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px; border-radius: var(--radius-sm);
+      cursor: pointer; transition: background var(--trans);
+    }
+    .server-item:hover { background: var(--c-surface2); }
+    .server-item-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: 700; flex-shrink: 0;
+    }
+    .server-item-info { flex: 1; min-width: 0; }
+    .server-item-name { font-size: .875rem; font-weight: 600; }
+    .server-item-members { font-size: .75rem; color: var(--c-text2); }
+    .activity-list { display: flex; flex-direction: column; gap: 12px; }
+    .activity-item { display: flex; align-items: flex-start; gap: 10px; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .activity-text { font-size: .85rem; color: var(--c-text2); line-height: 1.5; }
+    .activity-time { font-size: .72rem; color: var(--c-text3); margin-top: 2px; }
+
+    /* ================================================================
+       CHAT PAGE
+    ================================================================ */
+    #page-chat {
+      position: relative; z-index: 1;
+      height: 100vh; overflow: hidden;
+    }
+    .chat-layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-srv) var(--sidebar-ch) 1fr 260px;
+      height: 100vh;
+    }
+
+    /* Servers Sidebar */
+    .chat-servers {
+      background: var(--c-bg);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 12px 0; gap: 6px;
+      border-right: 1px solid var(--c-border);
+      overflow-y: auto;
+      position: relative;
+    }
+    .chat-servers::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(180deg, var(--c-aurora1) 0%, transparent 60%);
+    }
+    .srv-icon {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: 700;
+      cursor: pointer; transition: all var(--trans);
+      position: relative; flex-shrink: 0;
+    }
+    .srv-icon:hover { border-radius: 16px; }
+    .srv-icon.active { border-radius: 16px; }
+    .srv-icon::before {
+      content: ''; position: absolute; left: -12px; top: 50%; transform: translateY(-50%);
+      width: 4px; border-radius: 0 4px 4px 0; background: var(--c-text);
+      height: 0; transition: height var(--trans);
+    }
+    .srv-icon.active::before { height: 36px; }
+    .srv-icon:hover::before { height: 20px; }
+    .srv-separator { width: 32px; height: 1px; background: var(--c-border); margin: 4px 0; }
+    .srv-add {
+      background: var(--c-surface1); color: var(--c-green);
+      border-radius: 50%; transition: all var(--trans);
+      font-size: 1.3rem; font-weight: 300;
+    }
+    .srv-add:hover { background: var(--c-green); color: #fff; border-radius: 16px; }
+
+    /* Channels Sidebar */
+    .chat-channels {
+      background: var(--c-surface1);
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--c-border);
+    }
+    .ch-server-header {
+      padding: 16px; border-bottom: 1px solid var(--c-border);
+      font-weight: 700; font-size: .95rem;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer;
+    }
+    .ch-server-header:hover { background: var(--c-surface2); }
+    .ch-list { flex: 1; overflow-y: auto; padding: 8px; }
+    .ch-category {
+      font-size: .68rem; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--c-text3); font-weight: 700;
+      padding: 8px 6px 4px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer;
+    }
+    .ch-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 8px; border-radius: 6px;
+      color: var(--c-text3); font-size: .875rem;
+      cursor: pointer; transition: all var(--trans);
+      position: relative;
+    }
+    .ch-item:hover { background: var(--c-surface2); color: var(--c-text2); }
+    .ch-item.active { background: var(--c-surface3); color: var(--c-text); }
+    .ch-item-icon { font-size: .9rem; flex-shrink: 0; }
+    .ch-unread {
+      margin-left: auto; background: var(--c-red);
+      width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .6rem; font-weight: 700;
+    }
+    .ch-user-panel {
+      padding: 10px 12px;
+      background: var(--c-bg); border-top: 1px solid var(--c-border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ch-user-panel .user-avatar { width: 32px; height: 32px; font-size: .72rem; }
+    .ch-user-panel .user-name { font-size: .82rem; font-weight: 600; }
+    .ch-user-panel .user-status { font-size: .68rem; }
+    .ch-user-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+    .icon-btn {
+      width: 32px; height: 32px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--c-text3); cursor: pointer; transition: all var(--trans);
+      font-size: .9rem;
+    }
+    .icon-btn:hover { background: var(--c-surface2); color: var(--c-text); }
+
+    /* Main Chat */
+    .chat-main {
+      display: flex; flex-direction: column;
+      background: var(--c-surface1);
+      overflow: hidden;
+    }
+    .chat-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--c-border);
+      background: var(--c-surface1);
+      box-shadow: var(--shadow-sm);
+    }
+    .chat-topbar-left { display: flex; align-items: center; gap: 10px; }
+    .chat-channel-name { font-weight: 700; font-size: 1rem; }
+    .chat-channel-topic { font-size: .8rem; color: var(--c-text2); margin-left: 8px; border-left: 1px solid var(--c-border); padding-left: 10px; }
+    .chat-topbar-actions { display: flex; align-items: center; gap: 6px; }
+    .topbar-search {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--c-surface2); border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm); padding: 6px 12px; cursor: text;
+    }
+    .topbar-search input {
+      background: none; border: none; outline: none;
+      color: var(--c-text); font-size: .82rem;
+      width: 140px;
+    }
+    .topbar-search input::placeholder { color: var(--c-text3); }
+
+    /* Messages */
+    .messages-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 2px; }
+    .msg-group { display: flex; gap: 14px; padding: 4px 8px 4px; border-radius: 8px; transition: background var(--trans); }
+    .msg-group:hover { background: rgba(255,255,255,.02); }
+    .msg-avatar {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .82rem; font-weight: 700; margin-top: 2px;
+    }
+    .msg-content { flex: 1; min-width: 0; }
+    .msg-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+    .msg-name { font-weight: 600; font-size: .9rem; cursor: pointer; }
+    .msg-name:hover { text-decoration: underline; }
+    .msg-time { font-size: .7rem; color: var(--c-text3); }
+    .msg-badge {
+      font-size: .6rem; font-weight: 700; padding: 1px 6px;
+      border-radius: var(--radius-full); text-transform: uppercase;
+    }
+    .msg-text { font-size: .9rem; line-height: 1.6; color: var(--c-text2); word-break: break-word; }
+    .msg-text code { font-family: var(--font-mono); background: var(--c-surface3); padding: 2px 6px; border-radius: 4px; font-size: .82rem; }
+    .msg-reactions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .reaction {
+      display: flex; align-items: center; gap: 4px;
+      background: var(--c-surface2); border: 1px solid var(--c-border);
+      border-radius: var(--radius-full); padding: 3px 10px;
+      font-size: .8rem; cursor: pointer; transition: all var(--trans);
+    }
+    .reaction:hover { border-color: var(--c-blue); background: rgba(88,101,242,.1); }
+    .reaction.mine { border-color: var(--c-blue); background: rgba(88,101,242,.15); }
+    .reaction-count { font-size: .75rem; color: var(--c-text2); font-weight: 600; }
+    .msg-actions {
+      display: none; gap: 2px; margin-left: auto;
+      align-items: center;
+    }
+    .msg-group:hover .msg-actions { display: flex; }
+    .msg-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 12px 0; color: var(--c-text3); font-size: .75rem;
+    }
+    .msg-divider::before, .msg-divider::after { content:''; flex:1; height:1px; background: var(--c-border); }
+    .system-msg { text-align: center; color: var(--c-text3); font-size: .8rem; padding: 8px; }
+
+    /* Message Input */
+    .chat-input-area { padding: 16px 20px; border-top: 1px solid var(--c-border); }
+    .input-wrapper {
+      background: var(--c-surface2); border: 1.5px solid var(--c-border);
+      border-radius: var(--radius-md); overflow: hidden;
+      transition: border-color var(--trans);
+    }
+    .input-wrapper:focus-within { border-color: var(--c-blue); }
+    .input-toolbar {
+      display: flex; align-items: center; gap: 4px;
+      padding: 8px 12px 0;
+    }
+    .input-field-row { display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px; }
+    .input-field-row .icon-btn { color: var(--c-text3); }
+    #msg-input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--c-text); font-size: .9rem; line-height: 1.5;
+      resize: none; max-height: 180px; font-family: var(--font);
+    }
+    #msg-input::placeholder { color: var(--c-text3); }
+    .send-btn {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--c-blue); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--trans);
+    }
+    .send-btn:hover { background: var(--c-blue-dark); transform: scale(1.05); }
+    .send-btn:disabled { background: var(--c-surface3); cursor: not-allowed; transform: none; }
+    .typing-indicator { padding: 4px 20px 0; font-size: .78rem; color: var(--c-text3); min-height: 20px; }
+
+    /* Right panel */
+    .chat-right {
+      background: var(--c-surface1);
+      border-left: 1px solid var(--c-border);
+      display: flex; flex-direction: column;
+      overflow-y: auto;
+    }
+    .right-section { padding: 16px; border-bottom: 1px solid var(--c-border); }
+    .right-section-title { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--c-text3); font-weight: 700; margin-bottom: 10px; }
+    .member-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 8px; border-radius: 6px; cursor: pointer;
+      transition: background var(--trans);
+    }
+    .member-item:hover { background: var(--c-surface2); }
+    .member-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 700; flex-shrink: 0;
+      position: relative;
+    }
+    .member-status {
+      position: absolute; bottom: 0; right: 0;
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 2px solid var(--c-surface1);
+    }
+    .member-name { font-size: .85rem; font-weight: 500; }
+    .member-activity { font-size: .72rem; color: var(--c-text3); }
+    .call-panel {
+      background: rgba(88,101,242,.1); border: 1px solid rgba(88,101,242,.2);
+      border-radius: var(--radius-md); padding: 16px;
+    }
+    .call-panel-title { font-weight: 700; margin-bottom: 12px; font-size: .9rem; }
+    .call-members { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .call-member-avatar {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; font-weight: 700; position: relative;
+    }
+    .call-member-avatar .speaking-ring {
+      position: absolute; inset: -3px; border-radius: 14px;
+      border: 2px solid var(--c-green); opacity: 0;
+      animation: speakPulse 1.5s ease infinite;
+    }
+    .call-member-avatar.speaking .speaking-ring { opacity: 1; }
+    @keyframes speakPulse { 0%,100% { opacity:.8; } 50% { opacity:.2; } }
+    .call-actions { display: flex; gap: 8px; }
+    .call-btn {
+      flex: 1; padding: 8px; border-radius: 8px;
+      font-size: .8rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all var(--trans); cursor: pointer; border: none;
+    }
+    .call-btn.join { background: var(--c-green); color: #fff; }
+    .call-btn.join:hover { background: #16a34a; }
+    .call-btn.leave { background: var(--c-red); color: #fff; }
+
+    /* Emoji picker (simple) */
+    .emoji-picker {
+      position: absolute; bottom: 100%; right: 0;
+      background: var(--c-surface2); border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg); padding: 12px;
+      display: grid; grid-template-columns: repeat(8, 1fr);
+      gap: 4px; z-index: 200; box-shadow: var(--shadow-md);
+    }
+    .emoji-btn { font-size: 1.3rem; cursor: pointer; padding: 4px; border-radius: 6px; text-align: center; transition: background var(--trans); }
+    .emoji-btn:hover { background: var(--c-surface3); }
+
+    /* ================================================================
+       PROFILE PAGE
+    ================================================================ */
+    #page-profile, #page-settings {
+      flex-direction: column; min-height: 100vh;
+      position: relative; z-index: 1;
+    }
+    .profile-hero {
+      height: 200px; position: relative;
+      background: linear-gradient(135deg, var(--c-blue), var(--c-violet));
+      overflow: hidden;
+    }
+    .profile-hero::after {
+      content: ''; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .profile-main { max-width: 900px; margin: 0 auto; padding: 0 24px 48px; width: 100%; }
+    .profile-header-card {
+      background: var(--c-surface1); border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg); padding: 24px;
+      margin-top: -60px; position: relative;
+      display: flex; gap: 20px; align-items: flex-end;
+      margin-bottom: 24px;
+    }
+    .profile-big-avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; font-weight: 700;
+      border: 4px solid var(--c-surface1);
+      background: linear-gradient(135deg, var(--c-blue), var(--c-violet));
+      flex-shrink: 0;
+    }
+    .profile-info { flex: 1; }
+    .profile-name { font-size: 1.5rem; font-weight: 800; }
+    .profile-handle { color: var(--c-text3); font-size: .875rem; font-family: var(--font-mono); margin-top: 2px; }
+    .profile-bio { color: var(--c-text2); font-size: .875rem; margin-top: 10px; line-height: 1.6; }
+    .profile-badges { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: var(--radius-full);
+      font-size: .75rem; font-weight: 600;
+    }
+    .badge-blue   { background: rgba(88,101,242,.15);  color: var(--c-blue); }
+    .badge-violet { background: rgba(124,58,237,.15);  color: var(--c-violet-lt); }
+    .badge-green  { background: rgba(34,197,94,.15);   color: var(--c-green); }
+    .badge-yellow { background: rgba(245,158,11,.15);  color: var(--c-yellow); }
+    .profile-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+    .profile-section-title { font-weight: 700; font-size: 1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .activity-chart {
+      display: grid; grid-template-columns: repeat(52, 1fr);
+      gap: 2px; padding: 12px; background: var(--c-surface2);
+      border-radius: var(--radius-md);
+    }
+    .chart-cell {
+      aspect-ratio: 1; border-radius: 2px;
+      background: var(--c-surface3);
+    }
+    .chart-cell.l1 { background: rgba(88,101,242,.3); }
+    .chart-cell.l2 { background: rgba(88,101,242,.55); }
+    .chart-cell.l3 { background: rgba(88,101,242,.8); }
+    .chart-cell.l4 { background: var(--c-blue); }
+
+    /* ================================================================
+       SETTINGS PAGE
+    ================================================================ */
+    .settings-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 64px); }
+    .settings-nav {
+      background: var(--c-surface1); border-right: 1px solid var(--c-border);
+      padding: 20px 12px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .settings-nav-label { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--c-text3); font-weight: 700; padding: 8px 12px; }
+    .settings-nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 6px;
+      color: var(--c-text2); font-size: .875rem; cursor: pointer;
+      transition: all var(--trans);
+    }
+    .settings-nav-item:hover { background: var(--c-surface2); color: var(--c-text); }
+    .settings-nav-item.active { background: rgba(88,101,242,.18); color: var(--c-blue); }
+    .settings-main { padding: 40px; overflow-y: auto; }
+    .settings-section { display: none; }
+    .settings-section.active { display: block; }
+    .settings-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 6px; }
+    .settings-desc  { color: var(--c-text2); font-size: .875rem; margin-bottom: 28px; }
+    .settings-block { background: var(--c-surface1); border: 1px solid var(--c-border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 20px; }
+    .settings-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px; border-bottom: 1px solid var(--c-border);
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row-info { flex: 1; }
+    .settings-row-title { font-weight: 600; margin-bottom: 3px; }
+    .settings-row-desc  { font-size: .8rem; color: var(--c-text2); }
+    .toggle {
+      width: 44px; height: 24px; border-radius: 12px;
+      background: var(--c-surface3); position: relative;
+      cursor: pointer; transition: background var(--trans);
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--c-blue); }
+    .toggle::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px; border-radius: 50%; background: #fff;
+      transition: transform var(--trans);
+      box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+    .toggle.on::after { transform: translateX(20px); }
+    .lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .lang-option {
+      padding: 14px 16px; border-radius: var(--radius-md);
+      border: 1.5px solid var(--c-border); cursor: pointer;
+      transition: all var(--trans); display: flex; align-items: center; gap: 10px;
+    }
+    .lang-option:hover { border-color: var(--c-blue); }
+    .lang-option.selected { border-color: var(--c-blue); background: rgba(88,101,242,.1); }
+    .lang-flag { font-size: 1.4rem; }
+    .lang-name { font-weight: 600; font-size: .875rem; }
+
+    /* ================================================================
+       MODALS
+    ================================================================ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      animation: fadeIn .2s ease;
+    }
+    .modal-overlay.hidden { display: none; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    .modal {
+      background: var(--c-surface1); border: 1px solid var(--c-border);
+      border-radius: var(--radius-xl); padding: 32px; width: 100%;
+      max-width: 480px; position: relative;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform:none; } }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      color: var(--c-text3); font-size: 1.2rem; cursor: pointer;
+      transition: color var(--trans);
+    }
+    .modal-close:hover { color: var(--c-text); }
+    .modal-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 6px; }
+    .modal-desc  { color: var(--c-text2); font-size: .875rem; margin-bottom: 24px; }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 600; display: flex; flex-direction: column; gap: 10px; }
+    .toast {
+      background: var(--c-surface2); border: 1px solid var(--c-border);
+      border-radius: var(--radius-md); padding: 14px 18px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: var(--shadow-md); min-width: 280px;
+      animation: toastIn .3s ease;
+    }
+    .toast.toast-success { border-color: var(--c-green); }
+    .toast.toast-error   { border-color: var(--c-red); }
+    @keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+    .toast-icon { font-size: 1.1rem; }
+    .toast-text { flex: 1; font-size: .875rem; }
+
+    /* Context Menu */
+    .context-menu {
+      position: fixed; z-index: 400;
+      background: var(--c-surface2); border: 1px solid var(--c-border);
+      border-radius: var(--radius-md); padding: 6px;
+      min-width: 180px; box-shadow: var(--shadow-md);
+    }
+    .context-menu.hidden { display: none; }
+    .context-item {
+      padding: 9px 12px; border-radius: 6px;
+      font-size: .85rem; cursor: pointer;
+      transition: background var(--trans); display: flex; align-items: center; gap: 10px;
+    }
+    .context-item:hover { background: var(--c-surface3); }
+    .context-item.danger { color: var(--c-red); }
+    .context-item.danger:hover { background: rgba(239,68,68,.1); }
+    .context-separator { height: 1px; background: var(--c-border); margin: 4px 0; }
+
+    /* ================================================================
+       VIDEO CALL OVERLAY
+    ================================================================ */
+    .vcall-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: #0a0f1e;
+      display: flex; flex-direction: column;
+    }
+    .vcall-overlay.hidden { display: none; }
+    .vcall-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px; border-bottom: 1px solid var(--c-border);
+    }
+    .vcall-grid {
+      flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px; padding: 16px; overflow: hidden;
+    }
+    .vcall-tile {
+      background: var(--c-surface1); border-radius: var(--radius-lg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; overflow: hidden; min-height: 180px;
+    }
+    .vcall-tile-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--c-surface1), var(--c-surface2));
+    }
+    .vcall-tile-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 700; position: relative; z-index: 1;
+    }
+    .vcall-tile-name {
+      position: absolute; bottom: 12px; left: 12px;
+      font-size: .8rem; font-weight: 600; z-index: 1;
+      background: rgba(0,0,0,.6); padding: 3px 10px; border-radius: var(--radius-full);
+    }
+    .vcall-controls {
+      padding: 20px; display: flex; align-items: center; justify-content: center;
+      gap: 16px; border-top: 1px solid var(--c-border);
+    }
+    .vcall-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; cursor: pointer; transition: all var(--trans);
+      border: none;
+    }
+    .vcall-btn.normal { background: var(--c-surface2); color: var(--c-text); }
+    .vcall-btn.normal:hover { background: var(--c-surface3); }
+    .vcall-btn.muted  { background: var(--c-red); color: #fff; }
+    .vcall-btn.end    { background: var(--c-red); color: #fff; width: 64px; height: 64px; font-size: 1.4rem; }
+    .vcall-btn.end:hover { background: #b91c1c; }
+
+    /* ================================================================
+       RESPONSIVE
+    ================================================================ */
+    @media (max-width: 1200px) {
+      .chat-layout { grid-template-columns: var(--sidebar-srv) var(--sidebar-ch) 1fr; }
+      .chat-right { display: none; }
+    }
+    @media (max-width: 900px) {
+      .chat-layout { grid-template-columns: var(--sidebar-srv) 1fr; }
+      .chat-channels { display: none; }
+      .chat-channels.open { display: flex; position: fixed; left: var(--sidebar-srv); top: 0; bottom: 0; width: var(--sidebar-ch); z-index: 50; }
+      .profile-grid { grid-template-columns: 1fr; }
+      .dash-body { grid-template-columns: 1fr; }
+      .dash-sidebar { display: none; }
+      .settings-layout { grid-template-columns: 1fr; }
+      .settings-nav { display: none; }
+    }
+    @media (max-width: 768px) {
+      .nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 60px 20px 40px; }
+      .stats-section, .features-section { padding: 40px 20px; }
+      .footer { padding: 24px 20px; }
+    }
+    @media (max-width: 480px) {
+      .chat-layout { grid-template-columns: 1fr; }
+      .chat-servers { display: none; }
+    }
+
+    /* ================================================================
+       ANIMATIONS
+    ================================================================ */
+    @keyframes shimmer {
+      from { background-position: -1000px 0; }
+      to   { background-position: 1000px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--c-surface2) 25%, var(--c-surface3) 37%, var(--c-surface2) 63%);
+      background-size: 1000px 100%;
+      animation: shimmer 1.5s linear infinite;
+      border-radius: 6px;
+    }
+
+    /* Focus visible for accessibility */
+    :focus-visible { outline: 2px solid var(--c-blue); outline-offset: 2px; }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+
+    /* RTL support */
+    [dir="rtl"] .nav-logo { flex-direction: row-reverse; }
+    [dir="rtl"] .msg-actions { margin-left: 0; margin-right: auto; }
+  </style>
+</head>
+<body>
+
+<!-- Aurora background (shared) -->
+<div class="aurora-bg" aria-hidden="true"></div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+<!-- Context menu -->
+<div class="context-menu hidden" id="contextMenu" role="menu" aria-label="Options"></div>
+
+<!-- ============================================================
+     VIDEO CALL OVERLAY
+============================================================ -->
+<div class="vcall-overlay hidden" id="vcallOverlay" role="dialog" aria-modal="true" aria-labelledby="vcallTitle">
+  <div class="vcall-header">
+    <div class="flex items-center gap-3">
+      <span style="color:var(--c-green);font-size:.9rem;">🔴</span>
+      <span id="vcallTitle" class="font-semibold" data-i18n="vcall.ongoing">Appel en cours — #vocal-général</span>
+      <span style="color:var(--c-text2);font-size:.8rem;" id="vcallTimer">00:00</span>
+    </div>
+    <div class="flex gap-2">
+      <button class="icon-btn" onclick="toggleVcall()" aria-label="Réduire">⬇️</button>
+    </div>
+  </div>
+  <div class="vcall-grid" id="vcallGrid">
+    <div class="vcall-tile">
+      <div class="vcall-tile-bg"></div>
+      <div class="vcall-tile-avatar" style="background:linear-gradient(135deg,#5865F2,#7C3AED)">🦊</div>
+      <div class="vcall-tile-name">Vous</div>
+    </div>
+    <div class="vcall-tile">
+      <div class="vcall-tile-bg"></div>
+      <div class="vcall-tile-avatar" style="background:linear-gradient(135deg,#22C55E,#16a34a)">🐺</div>
+      <div class="vcall-tile-name">Léa</div>
+    </div>
+    <div class="vcall-tile">
+      <div class="vcall-tile-bg"></div>
+      <div class="vcall-tile-avatar" style="background:linear-gradient(135deg,#F59E0B,#d97706)">🦁</div>
+      <div class="vcall-tile-name">Max</div>
+    </div>
+  </div>
+  <div class="vcall-controls">
+    <button class="vcall-btn normal" id="micBtn" onclick="toggleMic()" aria-label="Micro" title="Micro">🎙️</button>
+    <button class="vcall-btn normal" id="camBtn" onclick="toggleCam()" aria-label="Caméra" title="Caméra">📹</button>
+    <button class="vcall-btn normal" onclick="" aria-label="Partager écran" title="Partager écran">🖥️</button>
+    <button class="vcall-btn normal" onclick="" aria-label="Chat">💬</button>
+    <button class="vcall-btn end" onclick="endVcall()" aria-label="Terminer l'appel" title="Raccrocher">📞</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL — Create Server
+============================================================ -->
+<div class="modal-overlay hidden" id="modalCreateServer" role="dialog" aria-modal="true" aria-labelledby="modalCreateServerTitle">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalCreateServer')" aria-label="Fermer">✕</button>
+    <div class="modal-title" id="modalCreateServerTitle" data-i18n="modal.createServer.title">Créer un serveur</div>
+    <div class="modal-desc" data-i18n="modal.createServer.desc">Votre serveur est l'endroit idéal pour vous retrouver avec vos amis.</div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.createServer.name">NOM DU SERVEUR</label>
+      <input class="form-input" type="text" id="newServerName" placeholder="Ex : Ma communauté" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.createServer.type">TYPE</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;">
+        <div class="lang-option selected" id="typePublic" onclick="selectServerType('public')">
+          <span>🌍</span>
+          <div><div class="lang-name" data-i18n="modal.createServer.public">Public</div><div style="font-size:.72rem;color:var(--c-text2)">Ouvert à tous</div></div>
+        </div>
+        <div class="lang-option" id="typePrivate" onclick="selectServerType('private')">
+          <span>🔒</span>
+          <div><div class="lang-name" data-i18n="modal.createServer.private">Privé</div><div style="font-size:.72rem;color:var(--c-text2)">Sur invitation</div></div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-gradient" style="width:100%;margin-top:8px;" onclick="createServer()">
+      <span data-i18n="modal.createServer.btn">Créer le serveur</span>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL — Add Friend
+============================================================ -->
+<div class="modal-overlay hidden" id="modalAddFriend" role="dialog" aria-modal="true" aria-labelledby="modalAddFriendTitle">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalAddFriend')" aria-label="Fermer">✕</button>
+    <div class="modal-title" id="modalAddFriendTitle" data-i18n="modal.addFriend.title">Ajouter un ami</div>
+    <div class="modal-desc" data-i18n="modal.addFriend.desc">Entrez le nom d'utilisateur NexoChat de votre ami.</div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.addFriend.label">NOM D'UTILISATEUR</label>
+      <input class="form-input" type="text" id="friendUsername" placeholder="utilisateur#1234" />
+    </div>
+    <button class="btn btn-primary" style="width:100%;" onclick="sendFriendRequest()">
+      <span data-i18n="modal.addFriend.btn">Envoyer une demande</span>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     LANDING PAGE (#page-landing)
+============================================================ -->
+<main id="page-landing" class="page active" aria-label="Accueil">
+  <nav class="nav" role="navigation" aria-label="Navigation principale">
+    <div class="nav-logo" role="banner">
+      <div class="logo-icon" aria-hidden="true">⚡</div>
+      <span class="logo-gradient">NexoChat</span>
+    </div>
+    <div class="nav-links" role="list">
+      <a href="#features" role="listitem" data-i18n="nav.features">Fonctionnalités</a>
+      <a href="#stats" role="listitem" data-i18n="nav.community">Communauté</a>
+      <a href="#" role="listitem" data-i18n="nav.download">Télécharger</a>
+      <a href="#" role="listitem" data-i18n="nav.support">Support</a>
+    </div>
+    <div class="nav-actions">
+      <select class="lang-select" id="langSelectNav" onchange="changeLang(this.value)" aria-label="Choisir la langue">
+        <option value="fr">🇫🇷 FR</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="es">🇪🇸 ES</option>
+        <option value="de">🇩🇪 DE</option>
+        <option value="it">🇮🇹 IT</option>
+        <option value="pt">🇵🇹 PT</option>
+        <option value="ar">🇸🇦 AR</option>
+      </select>
+      <button class="btn btn-ghost" onclick="showPage('login')" data-i18n="nav.login">Connexion</button>
+      <button class="btn btn-primary" onclick="showPage('register')" data-i18n="nav.register">S'inscrire</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge">
+      <div class="dot" aria-hidden="true"></div>
+      <span data-i18n="hero.badge">Nouveau · Rejoignez 2M+ de membres</span>
+    </div>
+    <h1 class="hero-title">
+      <span data-i18n="hero.title1">Parlez, créez,</span><br>
+      <span class="gradient" data-i18n="hero.title2">connectez-vous.</span>
+    </h1>
+    <p class="hero-sub" data-i18n="hero.sub">NexoChat est la plateforme communautaire nouvelle génération. Des serveurs privés aux grandes communautés — votre espace, vos règles.</p>
+    <div class="hero-actions">
+      <button class="btn btn-gradient btn-lg" onclick="showPage('register')">
+        <span data-i18n="hero.cta1">Commencer gratuitement</span> →
+      </button>
+      <button class="btn btn-outline btn-lg" onclick="showPage('chat')">
+        <span data-i18n="hero.cta2">Voir la démo</span>
+      </button>
+    </div>
+
+    <!-- App preview -->
+    <div class="hero-preview" aria-hidden="true">
+      <div class="preview-bar">
+        <div class="preview-dot" style="background:#EF4444"></div>
+        <div class="preview-dot" style="background:#F59E0B"></div>
+        <div class="preview-dot" style="background:#22C55E"></div>
+        <span style="font-size:.75rem;color:var(--c-text3);margin-left:8px;font-family:var(--font-mono)">NexoChat</span>
+      </div>
+      <div class="preview-body">
+        <div class="preview-servers">
+          <div class="preview-srv-icon active" style="background:linear-gradient(135deg,#5865F2,#7C3AED)">NX</div>
+          <div class="preview-srv-icon" style="background:linear-gradient(135deg,#22C55E,#16a34a)">🎮</div>
+          <div class="preview-srv-icon" style="background:linear-gradient(135deg,#F59E0B,#d97706)">🎵</div>
+          <div class="preview-srv-icon" style="background:linear-gradient(135deg,#EF4444,#b91c1c)">🚀</div>
+        </div>
+        <div class="preview-channels">
+          <div class="preview-ch-label">GÉNÉRAL</div>
+          <div class="preview-ch active"># général</div>
+          <div class="preview-ch"># annonces</div>
+          <div class="preview-ch"># mèmes</div>
+          <div class="preview-ch-label">VOCAL</div>
+          <div class="preview-ch">🔊 lobby</div>
+          <div class="preview-ch">🔊 gaming</div>
+        </div>
+        <div class="preview-messages">
+          <div class="preview-msg">
+            <div class="preview-avatar" style="background:linear-gradient(135deg,#5865F2,#7C3AED)">🦊</div>
+            <div class="preview-msg-body">
+              <div class="preview-msg-name" style="color:#5865F2">Alex · <span style="font-size:.68rem;color:var(--c-text3)">14:32</span></div>
+              <div class="preview-msg-text">Bienvenue sur NexoChat ! 🎉 La plateforme est enfin live !</div>
+            </div>
+          </div>
+          <div class="preview-msg">
+            <div class="preview-avatar" style="background:linear-gradient(135deg,#22C55E,#16a34a)">🐺</div>
+            <div class="preview-msg-body">
+              <div class="preview-msg-name" style="color:#22C55E">Léa · <span style="font-size:.68rem;color:var(--c-text3)">14:33</span></div>
+              <div class="preview-msg-text">Incroyable ! Le design est 🔥🔥🔥</div>
+            </div>
+          </div>
+          <div class="preview-msg">
+            <div class="preview-avatar" style="background:linear-gradient(135deg,#F59E0B,#d97706)">🦁</div>
+            <div class="preview-msg-body">
+              <div class="preview-msg-name" style="color:#F59E0B">Max · <span style="font-size:.68rem;color:var(--c-text3)">14:35</span></div>
+              <div class="preview-msg-text">Ça met Discord dans la poche 😎 enfin une vraie alternative !</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-input" data-i18n="preview.placeholder">Envoyer un message dans #général…</div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats-section" id="stats" aria-labelledby="stats-heading">
+    <h2 class="sr-only" id="stats-heading">Statistiques</h2>
+    <div class="stat-card">
+      <div class="stat-num blue" id="statUsers">2M+</div>
+      <div class="stat-label" data-i18n="stats.users">Utilisateurs actifs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num violet" id="statServers">150K+</div>
+      <div class="stat-label" data-i18n="stats.servers">Serveurs créés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num green" id="statMsgs">50M+</div>
+      <div class="stat-label" data-i18n="stats.messages">Messages envoyés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--c-yellow)" id="statUptime">99.9%</div>
+      <div class="stat-label" data-i18n="stats.uptime">Disponibilité</div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section" id="features" aria-labelledby="features-heading">
+    <div class="section-label" data-i18n="features.eyebrow">POURQUOI NEXOCHAT</div>
+    <h2 class="section-title" id="features-heading" data-i18n="features.title">Tout ce dont vous avez besoin,<br>enfin réuni.</h2>
+    <div class="features-grid" role="list">
+      <article class="feature-card" role="listitem">
+        <div class="feature-icon" style="background:rgba(88,101,242,.15)">💬</div>
+        <div class="feature-title" data-i18n="feat.chat.title">Messagerie temps réel</div>
+        <div class="feature-desc" data-i18n="feat.chat.desc">Messages instantanés, réactions emoji, fils de discussion et markdown enrichi. La communication sans friction.</div>
+      </article>
+      <article class="feature-card" role="listitem">
+        <div class="feature-icon" style="background:rgba(124,58,237,.15)">🎙️</div>
+        <div class="feature-title" data-i18n="feat.voice.title">Audio & Vidéo HD</div>
+        <div class="feature-desc" data-i18n="feat.voice.desc">Salons vocaux avec suppression de bruit, qualité cristalline et partage d'écran jusqu'à 4K.</div>
+      </article>
+      <article class="feature-card" role="listitem">
+        <div class="feature-icon" style="background:rgba(34,197,94,.15)">🛡️</div>
+        <div class="feature-title" data-i18n="feat.security.title">Sécurité maximale</div>
+        <div class="feature-desc" data-i18n="feat.security.desc">Chiffrement E2E, authentification 2FA, rôles granulaires et modération automatique par IA.</div>
+      </article>
+      <article class="feature-card" role="listitem">
+        <div class="feature-icon" style="background:rgba(245,158,11,.15)">⚙️</div>
+        <div class="feature-title" data-i18n="feat.custom.title">Personnalisation totale</div>
+        <div class="feature-desc" data-i18n="feat.custom.desc">Bots, intégrations, webhooks et thèmes. Adaptez NexoChat à votre communauté.</div>
+      </article>
+      <article class="feature-card" role="listitem">
+        <div class="feature-icon" style="background:rgba(239,68,68,.15)">🌍</div>
+        <div class="feature-title" data-i18n="feat.global.title">Mondial & multilingue</div>
+        <div class="feature-desc" data-i18n="feat.global.desc">Interface en 7 langues, traduction automatique des messages et CDN mondial pour la latence minimale.</div>
+      </article>
+      <article class="feature-card" role="listitem">
+        <div class="feature-icon" style="background:rgba(88,101,242,.12)">📱</div>
+        <div class="feature-title" data-i18n="feat.mobile.title">Partout, tout le temps</div>
+        <div class="feature-desc" data-i18n="feat.mobile.desc">Application native iOS & Android, PWA et client desktop. Vos messages vous suivent partout.</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section style="padding:60px 48px;text-align:center;" aria-labelledby="cta-heading">
+    <h2 id="cta-heading" style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:900;letter-spacing:-.03em;margin-bottom:16px;" data-i18n="cta.title">Prêt à rejoindre la révolution ?</h2>
+    <p style="color:var(--c-text2);margin-bottom:32px;font-size:1rem;" data-i18n="cta.sub">Gratuit pour toujours pour les communautés. Plans Premium pour les pros.</p>
+    <button class="btn btn-gradient btn-lg" onclick="showPage('register')">
+      <span data-i18n="cta.btn">Créer mon compte gratuit</span>
+    </button>
+  </section>
+
+  <footer class="footer" role="contentinfo">
+    <div class="nav-logo">
+      <div class="logo-icon" aria-hidden="true">⚡</div>
+      <span class="logo-gradient">NexoChat</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <a href="#" style="color:var(--c-text3);font-size:.82rem;" data-i18n="footer.privacy">Confidentialité</a>
+      <a href="#" style="color:var(--c-text3);font-size:.82rem;" data-i18n="footer.terms">Conditions</a>
+      <a href="#" style="color:var(--c-text3);font-size:.82rem;" data-i18n="footer.status">Statut</a>
+      <a href="#" style="color:var(--c-text3);font-size:.82rem;" data-i18n="footer.blog">Blog</a>
+    </div>
+    <div style="color:var(--c-text3);font-size:.8rem;">© 2025 NexoChat Inc.</div>
+  </footer>
+</main>
+
+<!-- ============================================================
+     LOGIN PAGE (#page-login)
+============================================================ -->
+<section id="page-login" class="page" aria-label="Connexion" role="main">
+  <div class="auth-card" role="form" aria-labelledby="loginTitle">
+    <div class="auth-logo"><span class="gradient">NexoChat</span></div>
+    <p class="auth-subtitle" id="loginTitle" data-i18n="login.subtitle">Bon retour parmi nous ! 👋</p>
+
+    <div class="social-btns" role="group" aria-label="Connexion via réseau social">
+      <button class="social-btn" onclick="socialLogin('Google')" aria-label="Connexion avec Google">
+        <span class="social-icon">🔵</span> <span data-i18n="login.google">Continuer avec Google</span>
+      </button>
+      <button class="social-btn" onclick="socialLogin('Discord')" aria-label="Connexion avec Discord">
+        <span class="social-icon">🎮</span> <span data-i18n="login.discord">Continuer avec Discord</span>
+      </button>
+      <button class="social-btn" onclick="socialLogin('GitHub')" aria-label="Connexion avec GitHub">
+        <span class="social-icon">⚫</span> <span data-i18n="login.github">Continuer avec GitHub</span>
+      </button>
+    </div>
+
+    <div class="divider" role="separator"><span data-i18n="login.or">ou par e-mail</span></div>
+
+    <div class="form-group">
+      <label class="form-label" for="loginEmail" data-i18n="login.email">E-MAIL</label>
+      <input class="form-input" type="email" id="loginEmail" placeholder="vous@example.com" autocomplete="email" required />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="loginPassword" data-i18n="login.password">MOT DE PASSE</label>
+      <div class="password-wrapper">
+        <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required />
+        <button class="password-toggle" type="button" onclick="togglePassword('loginPassword')" aria-label="Afficher le mot de passe">👁️</button>
+      </div>
+    </div>
+    <div style="text-align:right;margin-bottom:16px;">
+      <a href="#" style="font-size:.82rem;color:var(--c-blue);" data-i18n="login.forgot">Mot de passe oublié ?</a>
+    </div>
+    <button class="btn btn-gradient" style="width:100%;" onclick="handleLogin()">
+      <span data-i18n="login.btn">Se connecter</span>
+    </button>
+    <div class="auth-link">
+      <span data-i18n="login.noAccount">Pas encore de compte ?</span>
+      <a href="#" onclick="showPage('register')" data-i18n="login.register">S'inscrire</a>
+    </div>
+    <div class="auth-link" style="margin-top:8px;">
+      <a href="#" onclick="showPage('landing')" style="color:var(--c-text3);font-size:.8rem;" data-i18n="auth.back">← Retour à l'accueil</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     REGISTER PAGE (#page-register)
+============================================================ -->
+<section id="page-register" class="page" aria-label="Inscription" role="main">
+  <div class="auth-card" role="form" aria-labelledby="registerTitle">
+    <div class="auth-logo"><span class="gradient">NexoChat</span></div>
+    <p class="auth-subtitle" id="registerTitle" data-i18n="register.subtitle">Créez votre compte gratuit ✨</p>
+
+    <div class="social-btns">
+      <button class="social-btn" onclick="socialLogin('Google')"><span class="social-icon">🔵</span> <span data-i18n="login.google">Continuer avec Google</span></button>
+      <button class="social-btn" onclick="socialLogin('Discord')"><span class="social-icon">🎮</span> <span data-i18n="login.discord">Continuer avec Discord</span></button>
+    </div>
+    <div class="divider"><span data-i18n="login.or">ou par e-mail</span></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label class="form-label" for="regFirst" data-i18n="register.firstName">PRÉNOM</label>
+        <input class="form-input" type="text" id="regFirst" placeholder="Alex" autocomplete="given-name" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="regLast" data-i18n="register.lastName">NOM</label>
+        <input class="form-input" type="text" id="regLast" placeholder="Durand" autocomplete="family-name" required />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="regUsername" data-i18n="register.username">NOM D'UTILISATEUR</label>
+      <input class="form-input" type="text" id="regUsername" placeholder="alex_durand" autocomplete="username" required />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="regEmail" data-i18n="login.email">E-MAIL</label>
+      <input class="form-input" type="email" id="regEmail" placeholder="vous@example.com" autocomplete="email" required />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="regPassword" data-i18n="login.password">MOT DE PASSE</label>
+      <div class="password-wrapper">
+        <input class="form-input" type="password" id="regPassword" placeholder="Min. 8 caractères" autocomplete="new-password" required />
+        <button class="password-toggle" type="button" onclick="togglePassword('regPassword')" aria-label="Afficher">👁️</button>
+      </div>
+    </div>
+    <div class="form-group" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;">
+      <input type="checkbox" id="regTerms" style="margin-top:2px;accent-color:var(--c-blue);" />
+      <label for="regTerms" style="font-size:.82rem;color:var(--c-text2);" data-i18n="register.terms">J'accepte les <a href="#" style="color:var(--c-blue)">conditions d'utilisation</a> et la <a href="#" style="color:var(--c-blue)">politique de confidentialité</a>.</label>
+    </div>
+    <button class="btn btn-gradient" style="width:100%;" onclick="handleRegister()">
+      <span data-i18n="register.btn">Créer mon compte</span>
+    </button>
+    <div class="auth-link">
+      <span data-i18n="register.hasAccount">Déjà un compte ?</span>
+      <a href="#" onclick="showPage('login')" data-i18n="register.login">Se connecter</a>
+    </div>
+    <div class="auth-link" style="margin-top:8px;">
+      <a href="#" onclick="showPage('landing')" style="color:var(--c-text3);font-size:.8rem;" data-i18n="auth.back">← Retour à l'accueil</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     DASHBOARD PAGE (#page-dashboard)
+============================================================ -->
+<div id="page-dashboard" class="page" aria-label="Tableau de bord" role="main">
+  <nav class="app-nav" role="navigation" aria-label="Application">
+    <div class="nav-logo">
+      <div class="logo-icon" aria-hidden="true">⚡</div>
+      <span class="logo-gradient">NexoChat</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="notification-btn icon-btn" aria-label="Notifications (3 non lues)">
+        🔔
+        <span class="notif-badge" aria-hidden="true">3</span>
+      </button>
+      <div class="user-menu" onclick="showPage('profile')" role="button" tabindex="0" aria-label="Votre profil">
+        <div class="user-avatar" aria-hidden="true">🦊</div>
+        <div>
+          <div class="user-name" data-user-name>Alex</div>
+          <div class="user-status">● En ligne</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dash-body">
+    <aside class="dash-sidebar" aria-label="Menu">
+      <div class="dash-sidebar-title" data-i18n="dash.nav.main">PRINCIPAL</div>
+      <div class="dash-nav-item active" onclick="setDashTab(this,'tab-home')" role="tab" aria-selected="true" tabindex="0">
+        <span class="dash-nav-icon">🏠</span><span data-i18n="dash.nav.home">Accueil</span>
+      </div>
+      <div class="dash-nav-item" onclick="setDashTab(this,'tab-friends')" role="tab" aria-selected="false" tabindex="0">
+        <span class="dash-nav-icon">👥</span><span data-i18n="dash.nav.friends">Amis</span>
+        <span style="margin-left:auto;background:var(--c-red);color:#fff;font-size:.65rem;padding:2px 7px;border-radius:99px;font-weight:700;">2</span>
+      </div>
+      <div class="dash-nav-item" onclick="setDashTab(this,'tab-dms')" role="tab" aria-selected="false" tabindex="0">
+        <span class="dash-nav-icon">💬</span><span data-i18n="dash.nav.dms">Messages directs</span>
+      </div>
+      <div class="dash-nav-item" onclick="showPage('chat')" role="tab" aria-selected="false" tabindex="0">
+        <span class="dash-nav-icon">⚡</span><span data-i18n="dash.nav.explore">Explorer</span>
+      </div>
+      <div style="height:1px;background:var(--c-border);margin:8px 0;"></div>
+      <div class="dash-sidebar-title" data-i18n="dash.nav.servers">MES SERVEURS</div>
+      <div class="dash-nav-item" onclick="showPage('chat')">
+        <div style="width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#5865F2,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0;">NX</div>
+        <span>NexoHub</span>
+      </div>
+      <div class="dash-nav-item" onclick="showPage('chat')">
+        <div style="width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#22C55E,#16a34a);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;">🎮</div>
+        <span>Gaming Zone</span>
+      </div>
+      <div class="dash-nav-item" onclick="openModal('modalCreateServer')">
+        <span class="dash-nav-icon">➕</span><span data-i18n="dash.createServer">Créer un serveur</span>
+      </div>
+      <div style="height:1px;background:var(--c-border);margin:8px 0;"></div>
+      <div class="dash-nav-item" onclick="showPage('settings')">
+        <span class="dash-nav-icon">⚙️</span><span data-i18n="dash.nav.settings">Paramètres</span>
+      </div>
+      <div class="dash-nav-item" onclick="showPage('landing')">
+        <span class="dash-nav-icon">🚪</span><span data-i18n="dash.nav.logout">Déconnexion</span>
+      </div>
+    </aside>
+
+    <div class="dash-main">
+      <!-- Tab: Home -->
+      <div id="tab-home">
+        <h1 style="font-size:1.5rem;font-weight:800;letter-spacing:-.03em;" data-i18n="dash.welcome">Bonjour, Alex ! 👋</h1>
+        <p style="color:var(--c-text2);margin-top:4px;font-size:.9rem;" data-i18n="dash.welcomeSub">Voici ce qui se passe dans vos communautés.</p>
+        <div class="dash-grid">
+          <!-- Servers -->
+          <div class="dash-card" style="grid-column:span 2;" aria-label="Serveurs actifs">
+            <div class="dash-card-title" data-i18n="dash.card.servers">Serveurs actifs</div>
+            <div class="dash-card-meta" data-i18n="dash.card.serversSub">Cliquez pour rejoindre</div>
+            <div class="server-list" id="serverList">
+              <div class="server-item" onclick="showPage('chat')" role="button" tabindex="0">
+                <div class="server-item-icon" style="background:linear-gradient(135deg,#5865F2,#7C3AED)">⚡</div>
+                <div class="server-item-info"><div class="server-item-name">NexoHub</div><div class="server-item-members">2,341 membres · 12 en ligne</div></div>
+                <span style="color:var(--c-green);font-size:.72rem;font-weight:600;">● ACTIF</span>
+              </div>
+              <div class="server-item" onclick="showPage('chat')" role="button" tabindex="0">
+                <div class="server-item-icon" style="background:linear-gradient(135deg,#22C55E,#16a34a)">🎮</div>
+                <div class="server-item-info"><div class="server-item-name">Gaming Zone</div><div class="server-item-members">856 membres · 45 en ligne</div></div>
+                <span style="color:var(--c-green);font-size:.72rem;font-weight:600;">● ACTIF</span>
+              </div>
+              <div class="server-item" onclick="showPage('chat')" role="button" tabindex="0">
+                <div class="server-item-icon" style="background:linear-gradient(135deg,#F59E0B,#d97706)">🎵</div>
+                <div class="server-item-info"><div class="server-item-name">Music Lounge</div><div class="server-item-members">423 membres · 8 en ligne</div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Activity -->
+          <div class="dash-card" aria-label="Activité récente">
+            <div class="dash-card-title" data-i18n="dash.card.activity">Activité récente</div>
+            <div class="dash-card-meta"></div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--c-blue)"></div>
+                <div><div class="activity-text">Léa a mentionné vous dans #général</div><div class="activity-time">Il y a 2 min</div></div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--c-green)"></div>
+                <div><div class="activity-text">Max a rejoint Gaming Zone</div><div class="activity-time">Il y a 15 min</div></div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--c-yellow)"></div>
+                <div><div class="activity-text">Nouveau message dans #annonces</div><div class="activity-time">Il y a 1h</div></div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--c-violet-lt)"></div>
+                <div><div class="activity-text">Sara vous a envoyé un message direct</div><div class="activity-time">Il y a 2h</div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Quick stats -->
+          <div class="dash-card" aria-label="Statistiques">
+            <div class="dash-card-title" data-i18n="dash.card.stats">Vos stats</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+              <div style="background:var(--c-surface2);border-radius:var(--radius-md);padding:16px;text-align:center;">
+                <div style="font-size:1.75rem;font-weight:900;color:var(--c-blue);">47</div>
+                <div style="font-size:.75rem;color:var(--c-text2);" data-i18n="dash.stats.friends">Amis</div>
+              </div>
+              <div style="background:var(--c-surface2);border-radius:var(--radius-md);padding:16px;text-align:center;">
+                <div style="font-size:1.75rem;font-weight:900;color:var(--c-violet-lt);">8</div>
+                <div style="font-size:.75rem;color:var(--c-text2);" data-i18n="dash.stats.servers">Serveurs</div>
+              </div>
+              <div style="background:var(--c-surface2);border-radius:var(--radius-md);padding:16px;text-align:center;">
+                <div style="font-size:1.75rem;font-weight:900;color:var(--c-green);">1.2K</div>
+                <div style="font-size:.75rem;color:var(--c-text2);" data-i18n="dash.stats.messages">Messages</div>
+              </div>
+              <div style="background:var(--c-surface2);border-radius:var(--radius-md);padding:16px;text-align:center;">
+                <div style="font-size:1.75rem;font-weight:900;color:var(--c-yellow);">32h</div>
+                <div style="font-size:.75rem;color:var(--c-text2);" data-i18n="dash.stats.online">En ligne</div>
+              </div>
+            </div>
+          </div>
+          <!-- Go to chat CTA -->
+          <div class="dash-card" style="background:linear-gradient(135deg,rgba(88,101,242,.2),rgba(124,58,237,.15));border-color:rgba(88,101,242,.3);">
+            <div style="font-size:2rem;margin-bottom:12px;">⚡</div>
+            <div class="dash-card-title" data-i18n="dash.goChat.title">Rejoindre une discussion</div>
+            <div class="dash-card-meta" data-i18n="dash.goChat.sub">Vos amis vous attendent dans NexoHub</div>
+            <button class="btn btn-gradient btn-sm" style="margin-top:8px;" onclick="showPage('chat')" data-i18n="dash.goChat.btn">Ouvrir le chat →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Friends -->
+      <div id="tab-friends" class="hidden">
+        <h1 style="font-size:1.5rem;font-weight:800;" data-i18n="dash.friends.title">Amis</h1>
+        <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="openModal('modalAddFriend')" data-i18n="dash.friends.add">+ Ajouter un ami</button>
+        </div>
+        <div style="margin-top:24px;display:flex;flex-direction:column;gap:2px;" id="friendsList" aria-label="Liste d'amis">
+          <!-- generated by JS -->
+        </div>
+      </div>
+
+      <!-- Tab: DMs -->
+      <div id="tab-dms" class="hidden">
+        <h1 style="font-size:1.5rem;font-weight:800;" data-i18n="dash.dms.title">Messages directs</h1>
+        <div style="margin-top:20px;display:flex;flex-direction:column;gap:2px;" id="dmList" aria-label="Messages directs"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     CHAT PAGE (#page-chat)
+============================================================ -->
+<div id="page-chat" class="page" aria-label="Chat" role="main">
+  <div class="chat-layout">
+    <!-- Servers column -->
+    <nav class="chat-servers" aria-label="Serveurs">
+      <!-- Home button -->
+      <button class="srv-icon" style="background:var(--c-surface1);" onclick="showPage('dashboard')" title="Tableau de bord" aria-label="Tableau de bord">🏠</button>
+      <div class="srv-separator" role="separator"></div>
+      <button class="srv-icon active" style="background:linear-gradient(135deg,#5865F2,#7C3AED);" onclick="selectServer(this,'NexoHub')" title="NexoHub" aria-label="NexoHub">⚡</button>
+      <button class="srv-icon" style="background:linear-gradient(135deg,#22C55E,#16a34a);" onclick="selectServer(this,'Gaming Zone')" title="Gaming Zone" aria-label="Gaming Zone">🎮</button>
+      <button class="srv-icon" style="background:linear-gradient(135deg,#F59E0B,#d97706);" onclick="selectServer(this,'Music Lounge')" title="Music Lounge" aria-label="Music Lounge">🎵</button>
+      <button class="srv-icon" style="background:linear-gradient(135deg,#EF4444,#b91c1c);" onclick="selectServer(this,'Dev Hub')" title="Dev Hub" aria-label="Dev Hub">🚀</button>
+      <button class="srv-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2);" onclick="selectServer(this,'Design Lab')" title="Design Lab" aria-label="Design Lab">🎨</button>
+      <div class="srv-separator" role="separator"></div>
+      <button class="srv-icon srv-add" onclick="openModal('modalCreateServer')" title="Créer un serveur" aria-label="Créer un serveur">+</button>
+    </nav>
+
+    <!-- Channels column -->
+    <nav class="chat-channels" id="chatChannels" aria-label="Salons">
+      <div class="ch-server-header" id="chServerHeader">
+        <span id="chServerName">NexoHub</span>
+        <span>⌄</span>
+      </div>
+      <div class="ch-list" role="list" id="channelList">
+        <div class="ch-category" role="heading" aria-level="3">
+          <span>TEXTE</span><span style="font-size:.8rem;cursor:pointer" aria-label="Ajouter un salon">+</span>
+        </div>
+        <div class="ch-item active" onclick="selectChannel(this,'général')" role="tab" aria-selected="true" tabindex="0">
+          <span class="ch-item-icon">#</span><span class="truncate">général</span>
+          <span class="ch-unread" aria-label="3 messages non lus">3</span>
+        </div>
+        <div class="ch-item" onclick="selectChannel(this,'annonces')" role="tab" tabindex="0">
+          <span class="ch-item-icon">📢</span><span class="truncate">annonces</span>
+        </div>
+        <div class="ch-item" onclick="selectChannel(this,'mèmes')" role="tab" tabindex="0">
+          <span class="ch-item-icon">#</span><span class="truncate">mèmes</span>
+        </div>
+        <div class="ch-item" onclick="selectChannel(this,'ressources')" role="tab" tabindex="0">
+          <span class="ch-item-icon">#</span><span class="truncate">ressources</span>
+        </div>
+        <div class="ch-category">
+          <span>VOCAL & VIDÉO</span><span style="font-size:.8rem;cursor:pointer">+</span>
+        </div>
+        <div class="ch-item" onclick="startCall('lobby')" role="tab" tabindex="0">
+          <span class="ch-item-icon">🔊</span><span class="truncate">lobby</span>
+        </div>
+        <div class="ch-item" onclick="startCall('gaming')" role="tab" tabindex="0">
+          <span class="ch-item-icon">🔊</span><span class="truncate">gaming</span>
+        </div>
+        <div class="ch-item" onclick="startCall('music')" role="tab" tabindex="0">
+          <span class="ch-item-icon">🎵</span><span class="truncate">musique</span>
+        </div>
+        <div class="ch-category"><span>PRIVÉ</span></div>
+        <div class="ch-item" onclick="selectChannel(this,'staff')" role="tab" tabindex="0">
+          <span class="ch-item-icon">🔒</span><span class="truncate">staff</span>
+        </div>
+      </div>
+      <div class="ch-user-panel" aria-label="Votre statut">
+        <div class="user-avatar" style="width:32px;height:32px;font-size:.72rem;" aria-hidden="true">🦊</div>
+        <div>
+          <div class="user-name" style="font-size:.82rem;" data-user-name>Alex</div>
+          <div class="user-status" style="font-size:.68rem;">● En ligne</div>
+        </div>
+        <div class="ch-user-actions" role="group" aria-label="Contrôles audio">
+          <button class="icon-btn" id="micToggleBtn" onclick="toggleMic()" aria-label="Micro" title="Micro">🎙️</button>
+          <button class="icon-btn" id="camToggleBtn" onclick="toggleCam()" aria-label="Caméra" title="Caméra">🎧</button>
+          <button class="icon-btn" onclick="showPage('settings')" aria-label="Paramètres">⚙️</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main chat area -->
+    <main class="chat-main" aria-label="Zone de discussion">
+      <div class="chat-topbar" role="toolbar" aria-label="Barre de salon">
+        <div class="chat-topbar-left">
+          <span style="color:var(--c-text2);">#</span>
+          <span class="chat-channel-name" id="currentChannelName">général</span>
+          <span class="chat-channel-topic" id="currentChannelTopic">Discussions générales du serveur — Soyez respectueux ✨</span>
+        </div>
+        <div class="chat-topbar-actions">
+          <div class="topbar-search" role="search">
+            <span aria-hidden="true">🔍</span>
+            <input type="search" placeholder="Rechercher..." aria-label="Rechercher dans le salon" id="searchInput" oninput="searchMessages(this.value)" />
+          </div>
+          <button class="icon-btn" title="Membres" onclick="document.getElementById('chatRight').classList.toggle('hidden')" aria-label="Afficher les membres">👥</button>
+          <button class="icon-btn" title="Épinglés" aria-label="Messages épinglés">📌</button>
+          <button class="icon-btn" title="Notifications" aria-label="Notifications du salon">🔔</button>
+        </div>
+      </div>
+
+      <div class="messages-area" id="messagesArea" aria-live="polite" aria-label="Messages" role="log"></div>
+
+      <div class="typing-indicator" id="typingIndicator" aria-live="polite" aria-atomic="true"></div>
+
+      <div class="chat-input-area">
+        <div class="input-wrapper">
+          <div class="input-toolbar">
+            <button class="icon-btn" title="Attacher un fichier" aria-label="Joindre un fichier">📎</button>
+            <button class="icon-btn" title="Gif" aria-label="Envoyer un GIF">GIF</button>
+          </div>
+          <div class="input-field-row" style="position:relative;">
+            <div style="position:relative;">
+              <button class="icon-btn" id="emojiToggle" onclick="toggleEmojiPicker()" aria-label="Emojis" aria-expanded="false" aria-haspopup="true">😀</button>
+              <div class="emoji-picker hidden" id="emojiPicker" role="dialog" aria-label="Sélecteur d'emojis">
+                <!-- filled by JS -->
+              </div>
+            </div>
+            <textarea id="msg-input" rows="1" placeholder="Envoyer un message dans #général…" aria-label="Zone de saisie du message" oninput="onMsgInput(this)" onkeydown="onMsgKey(event)"></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled aria-label="Envoyer">➤</button>
+          </div>
+        </div>
+        <div style="padding:4px 4px 0;font-size:.72rem;color:var(--c-text3);" data-i18n="chat.hint">Appuyez sur <kbd style="background:var(--c-surface3);padding:1px 5px;border-radius:4px;font-family:var(--font-mono)">Entrée</kbd> pour envoyer</div>
+      </div>
+    </main>
+
+    <!-- Right members panel -->
+    <aside class="chat-right" id="chatRight" aria-label="Membres en ligne">
+      <!-- Active call -->
+      <div class="right-section">
+        <div class="call-panel" id="callPanel">
+          <div class="call-panel-title">🔊 Vocal — lobby</div>
+          <div class="call-members">
+            <div class="call-member-avatar speaking" style="background:linear-gradient(135deg,#22C55E,#16a34a)" title="Léa (parle)">
+              🐺
+              <div class="speaking-ring"></div>
+            </div>
+            <div class="call-member-avatar" style="background:linear-gradient(135deg,#F59E0B,#d97706)" title="Max">🦁</div>
+          </div>
+          <div class="call-actions">
+            <button class="call-btn join" onclick="startCall('lobby')" data-i18n="call.join">Rejoindre</button>
+          </div>
+        </div>
+      </div>
+      <!-- Online -->
+      <div class="right-section">
+        <div class="right-section-title" data-i18n="chat.members.online">EN LIGNE — 12</div>
+        <div class="member-item">
+          <div class="member-avatar" style="background:linear-gradient(135deg,#5865F2,#7C3AED)">🦊<div class="member-status" style="background:var(--c-green)"></div></div>
+          <div><div class="member-name">Alex (Vous)</div><div class="member-activity">NexoChat</div></div>
+        </div>
+        <div class="member-item">
+          <div class="member-avatar" style="background:linear-gradient(135deg,#22C55E,#16a34a)">🐺<div class="member-status" style="background:var(--c-green)"></div></div>
+          <div><div class="member-name">Léa</div><div class="member-activity">🔊 lobby</div></div>
+        </div>
+        <div class="member-item">
+          <div class="member-avatar" style="background:linear-gradient(135deg,#F59E0B,#d97706)">🦁<div class="member-status" style="background:var(--c-green)"></div></div>
+          <div><div class="member-name">Max</div><div class="member-activity">🎮 Valorant</div></div>
+        </div>
+        <div class="member-item">
+          <div class="member-avatar" style="background:linear-gradient(135deg,#06b6d4,#0891b2)">🦋<div class="member-status" style="background:var(--c-green)"></div></div>
+          <div><div class="member-name">Sara</div><div class="member-activity">🎵 Écoute de la musique</div></div>
+        </div>
+        <div class="member-item">
+          <div class="member-avatar" style="background:linear-gradient(135deg,#EF4444,#b91c1c)">🦅<div class="member-status" style="background:var(--c-yellow)"></div></div>
+          <div><div class="member-name">Tom</div><div class="member-activity">Inactif</div></div>
+        </div>
+      </div>
+      <div class="right-section">
+        <div class="right-section-title" data-i18n="chat.members.offline">HORS LIGNE — 38</div>
+        <div class="member-item">
+          <div class="member-avatar" style="background:var(--c-surface3);color:var(--c-text3)">🐻<div class="member-status" style="background:var(--c-text3)"></div></div>
+          <div><div class="member-name" style="color:var(--c-text2)">Nico</div></div>
+        </div>
+        <div class="member-item">
+          <div class="member-avatar" style="background:var(--c-surface3);color:var(--c-text3)">🦊<div class="member-status" style="background:var(--c-text3)"></div></div>
+          <div><div class="member-name" style="color:var(--c-text2)">Emma</div></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ============================================================
+     PROFILE PAGE (#page-profile)
+============================================================ -->
+<div id="page-profile" class="page" aria-label="Profil" role="main">
+  <nav class="app-nav">
+    <div class="nav-logo"><div class="logo-icon" aria-hidden="true">⚡</div><span class="logo-gradient">NexoChat</span></div>
+    <div class="flex items-center gap-3">
+      <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')" data-i18n="profile.back">← Tableau de bord</button>
+      <button class="btn btn-primary btn-sm" onclick="showPage('settings')" data-i18n="profile.edit">Modifier le profil</button>
+    </div>
+  </nav>
+  <div class="profile-hero" aria-hidden="true"></div>
+  <div class="profile-main">
+    <div class="profile-header-card">
+      <div class="profile-big-avatar" aria-hidden="true">🦊</div>
+      <div class="profile-info">
+        <div class="profile-name" data-user-name>Alex Durand</div>
+        <div class="profile-handle" style="font-family:var(--font-mono)">alex_durand#4821</div>
+        <div class="profile-bio" data-i18n="profile.bio">Développeur passionné · Gamer le weekend · Fan de café ☕ | Membre NexoChat depuis 2024</div>
+        <div class="profile-badges" role="list" aria-label="Badges">
+          <span class="badge badge-blue" role="listitem">⚡ Fondateur</span>
+          <span class="badge badge-violet" role="listitem">💎 Premium</span>
+          <span class="badge badge-green" role="listitem">✅ Vérifié</span>
+          <span class="badge badge-yellow" role="listitem">🏆 Top Contributeur</span>
+        </div>
+      </div>
+    </div>
+    <div class="profile-grid">
+      <div>
+        <div class="dash-card">
+          <div class="profile-section-title">📊 <span data-i18n="profile.activity">Activité de messagerie</span></div>
+          <div class="activity-chart" id="activityChart" aria-label="Graphique d'activité des 52 dernières semaines"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:.72rem;color:var(--c-text3);">
+            <span>Jan</span><span>Mar</span><span>Mai</span><span>Juil</span><span>Sep</span><span>Nov</span>
+          </div>
+        </div>
+        <div class="dash-card" style="margin-top:16px;">
+          <div class="profile-section-title">🏅 <span data-i18n="profile.badges">Badges & Récompenses</span></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
+            <div style="background:var(--c-surface2);border-radius:var(--radius-md);padding:14px;text-align:center;">
+              <div style="font-size:1.8rem;">⚡</div>
+              <div style="font-size:.78rem;font-weight:600;margin-top:6px;">Fondateur</div>
+              <div style="font-size:.68rem;color:var(--c-text3);">Membre fondateur</div>
+            </div>
+            <div style="background:var(--c-surface2);border-radius:var(--radius-md);padding:14px;text-align:center;">
+              <div style="font-size:1.8rem;">🚀</div>
+              <div style="font-size:.78rem;font-weight:600;margin-top:6px;">Early Adopter</div>
+              <div style="font-size:.68rem;color:var(--c-text3);">Bêta testeur</div>
+            </div>
+            <div style="background:var(--c-surface2);border-radius:var(--radius-md);padding:14px;text-align:center;">
+              <div style="font-size:1.8rem;">💬</div>
+              <div style="font-size:.78rem;font-weight:600;margin-top:6px;">Bavard</div>
+              <div style="font-size:.68rem;color:var(--c-text3);">1000+ messages</div>
+            </div>
+            <div style="background:var(--c-surface2);border-radius:var(--radius-md);padding:14px;text-align:center;">
+              <div style="font-size:1.8rem;">🤝</div>
+              <div style="font-size:.78rem;font-weight:600;margin-top:6px;">Social</div>
+              <div style="font-size:.68rem;color:var(--c-text3);">50+ amis</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="dash-card" style="margin-bottom:16px;">
+          <div class="profile-section-title">👤 <span data-i18n="profile.info">Informations</span></div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div><div style="font-size:.72rem;color:var(--c-text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;" data-i18n="profile.member">MEMBRE DEPUIS</div><div style="font-size:.875rem;">🗓️ 15 Janvier 2024</div></div>
+            <div><div style="font-size:.72rem;color:var(--c-text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;" data-i18n="profile.location">LOCALISATION</div><div style="font-size:.875rem;">🌍 France</div></div>
+            <div><div style="font-size:.72rem;color:var(--c-text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;">STATUS</div><div style="font-size:.875rem;color:var(--c-green);">● En ligne</div></div>
+            <div><div style="font-size:.72rem;color:var(--c-text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;" data-i18n="profile.plan">PLAN</div><div style="font-size:.875rem;">💎 <span style="color:var(--c-violet-lt);font-weight:600;">NexoChat Premium</span></div></div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="profile-section-title">🎮 <span data-i18n="profile.mutualServers">Serveurs communs</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="server-item" onclick="showPage('chat')">
+              <div class="server-item-icon" style="background:linear-gradient(135deg,#5865F2,#7C3AED)">⚡</div>
+              <div class="server-item-info"><div class="server-item-name">NexoHub</div><div class="server-item-members">2,341 membres</div></div>
+            </div>
+            <div class="server-item">
+              <div class="server-item-icon" style="background:linear-gradient(135deg,#22C55E,#16a34a)">🎮</div>
+              <div class="server-item-info"><div class="server-item-name">Gaming Zone</div><div class="server-item-members">856 membres</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SETTINGS PAGE (#page-settings)
+============================================================ -->
+<div id="page-settings" class="page" aria-label="Paramètres" role="main">
+  <nav class="app-nav">
+    <div class="nav-logo"><div class="logo-icon" aria-hidden="true">⚡</div><span class="logo-gradient">NexoChat</span></div>
+    <div class="flex items-center gap-3">
+      <button class="btn btn-outline btn-sm" onclick="showPage('dashboard')" data-i18n="settings.back">← Retour</button>
+    </div>
+  </nav>
+  <div class="settings-layout">
+    <nav class="settings-nav" aria-label="Navigation des paramètres">
+      <div class="settings-nav-label" data-i18n="settings.section.account">MON COMPTE</div>
+      <div class="settings-nav-item active" onclick="switchSettingsSection(this,'sec-profile')" tabindex="0">👤 <span data-i18n="settings.nav.profile">Profil</span></div>
+      <div class="settings-nav-item" onclick="switchSettingsSection(this,'sec-account')" tabindex="0">🔐 <span data-i18n="settings.nav.account">Compte & Sécurité</span></div>
+      <div class="settings-nav-item" onclick="switchSettingsSection(this,'sec-notifs')" tabindex="0">🔔 <span data-i18n="settings.nav.notifs">Notifications</span></div>
+      <div class="settings-nav-label" data-i18n="settings.section.app">APPLICATION</div>
+      <div class="settings-nav-item" onclick="switchSettingsSection(this,'sec-appearance')" tabindex="0">🎨 <span data-i18n="settings.nav.appearance">Apparence</span></div>
+      <div class="settings-nav-item" onclick="switchSettingsSection(this,'sec-lang')" tabindex="0">🌍 <span data-i18n="settings.nav.lang">Langue</span></div>
+      <div class="settings-nav-item" onclick="switchSettingsSection(this,'sec-voice')" tabindex="0">🎙️ <span data-i18n="settings.nav.voice">Voix & Vidéo</span></div>
+      <div class="settings-nav-label" data-i18n="settings.section.danger">DANGER</div>
+      <div class="settings-nav-item" style="color:var(--c-red);" onclick="confirmDeleteAccount()" tabindex="0">🗑️ <span data-i18n="settings.nav.delete">Supprimer le compte</span></div>
+    </nav>
+    <div class="settings-main">
+      <!-- Profile section -->
+      <div class="settings-section active" id="sec-profile">
+        <div class="settings-title" data-i18n="settings.profile.title">Profil</div>
+        <div class="settings-desc" data-i18n="settings.profile.desc">Modifiez vos informations publiques.</div>
+        <div class="settings-block">
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.profile.avatar">Photo de profil</div>
+              <div class="settings-row-desc" data-i18n="settings.profile.avatarDesc">Formats : JPG, PNG, GIF · Max 8MB</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#5865F2,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:1.5rem;" aria-hidden="true">🦊</div>
+              <button class="btn btn-outline btn-sm" data-i18n="settings.profile.changeAvatar">Changer</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.profile.displayName">Nom d'affichage</div>
+            </div>
+            <input class="form-input" style="width:220px;" type="text" value="Alex Durand" aria-label="Nom d'affichage" />
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.profile.bio">Biographie</div>
+            </div>
+            <textarea class="form-input" style="width:220px;height:80px;resize:none;" aria-label="Biographie">Développeur passionné · Gamer le weekend ☕</textarea>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.profile.status">Statut personnalisé</div>
+            </div>
+            <input class="form-input" style="width:220px;" type="text" placeholder="🚀 En train de coder..." aria-label="Statut" />
+          </div>
+        </div>
+        <button class="btn btn-gradient" onclick="saveSettings()" data-i18n="settings.save">Enregistrer les modifications</button>
+      </div>
+      <!-- Account section -->
+      <div class="settings-section" id="sec-account">
+        <div class="settings-title" data-i18n="settings.account.title">Compte & Sécurité</div>
+        <div class="settings-desc" data-i18n="settings.account.desc">Gérez vos identifiants et la sécurité de votre compte.</div>
+        <div class="settings-block">
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title">E-mail</div>
+              <div class="settings-row-desc">alex@example.com</div>
+            </div>
+            <button class="btn btn-outline btn-sm" data-i18n="settings.change">Modifier</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.account.password">Mot de passe</div>
+              <div class="settings-row-desc" data-i18n="settings.account.passwordDesc">Dernière modification il y a 3 mois</div>
+            </div>
+            <button class="btn btn-outline btn-sm" data-i18n="settings.change">Modifier</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.account.2fa">Double authentification (2FA)</div>
+              <div class="settings-row-desc" data-i18n="settings.account.2faDesc">Protégez votre compte avec une application d'authentification.</div>
+            </div>
+            <div class="toggle" id="toggle2fa" onclick="toggleSwitch('toggle2fa')" role="switch" aria-checked="false" tabindex="0" aria-label="Activer la 2FA"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Notifications section -->
+      <div class="settings-section" id="sec-notifs">
+        <div class="settings-title" data-i18n="settings.notifs.title">Notifications</div>
+        <div class="settings-desc" data-i18n="settings.notifs.desc">Choisissez quand et comment être notifié.</div>
+        <div class="settings-block">
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.notifs.desktop">Notifications bureau</div>
+              <div class="settings-row-desc" data-i18n="settings.notifs.desktopDesc">Afficher des notifications quand une fenêtre est inactive.</div>
+            </div>
+            <div class="toggle on" id="toggleDesktop" onclick="toggleSwitch('toggleDesktop')" role="switch" aria-checked="true" tabindex="0"></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.notifs.sounds">Sons</div>
+              <div class="settings-row-desc" data-i18n="settings.notifs.soundsDesc">Jouer des sons pour les nouveaux messages et appels.</div>
+            </div>
+            <div class="toggle on" id="toggleSounds" onclick="toggleSwitch('toggleSounds')" role="switch" aria-checked="true" tabindex="0"></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.notifs.mentions">Mentions uniquement</div>
+              <div class="settings-row-desc" data-i18n="settings.notifs.mentionsDesc">N'être notifié que lors de @mentions et DMs.</div>
+            </div>
+            <div class="toggle" id="toggleMentions" onclick="toggleSwitch('toggleMentions')" role="switch" aria-checked="false" tabindex="0"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Appearance section -->
+      <div class="settings-section" id="sec-appearance">
+        <div class="settings-title" data-i18n="settings.appearance.title">Apparence</div>
+        <div class="settings-desc" data-i18n="settings.appearance.desc">Personnalisez l'interface à votre goût.</div>
+        <div class="settings-block">
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.appearance.fontSize">Taille du texte</div>
+            </div>
+            <input type="range" min="12" max="18" value="14" style="accent-color:var(--c-blue);width:140px;" aria-label="Taille du texte" oninput="adjustFontSize(this.value)" />
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.appearance.compact">Mode compact</div>
+              <div class="settings-row-desc" data-i18n="settings.appearance.compactDesc">Réduire l'espacement entre les messages.</div>
+            </div>
+            <div class="toggle" id="toggleCompact" onclick="toggleSwitch('toggleCompact')" role="switch" aria-checked="false" tabindex="0"></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.appearance.animations">Animations</div>
+              <div class="settings-row-desc" data-i18n="settings.appearance.animationsDesc">Activer les effets visuels animés.</div>
+            </div>
+            <div class="toggle on" id="toggleAnimations" onclick="toggleSwitch('toggleAnimations')" role="switch" aria-checked="true" tabindex="0"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Language section -->
+      <div class="settings-section" id="sec-lang">
+        <div class="settings-title" data-i18n="settings.lang.title">Langue de l'interface</div>
+        <div class="settings-desc" data-i18n="settings.lang.desc">Choisissez la langue d'affichage de NexoChat.</div>
+        <div class="lang-grid" id="langGrid" role="group" aria-label="Choisir la langue">
+          <!-- filled by JS -->
+        </div>
+      </div>
+      <!-- Voice section -->
+      <div class="settings-section" id="sec-voice">
+        <div class="settings-title" data-i18n="settings.voice.title">Voix & Vidéo</div>
+        <div class="settings-desc" data-i18n="settings.voice.desc">Configurez votre micro et votre caméra.</div>
+        <div class="settings-block">
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.voice.input">Microphone</div>
+            </div>
+            <select class="form-input" style="width:200px;" aria-label="Choisir le microphone">
+              <option>Microphone par défaut</option>
+              <option>Casque USB</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.voice.output">Sortie audio</div>
+            </div>
+            <select class="form-input" style="width:200px;" aria-label="Choisir la sortie audio">
+              <option>Haut-parleurs par défaut</option>
+              <option>Casque</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-title" data-i18n="settings.voice.noise">Suppression de bruit</div>
+              <div class="settings-row-desc" data-i18n="settings.voice.noiseDesc">Filtre l'écho et les bruits de fond par IA.</div>
+            </div>
+            <div class="toggle on" id="toggleNoise" onclick="toggleSwitch('toggleNoise')" role="switch" aria-checked="true" tabindex="0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+/* ============================================================
+   TRANSLATIONS
+============================================================ */
+const TRANSLATIONS = {
+  fr: {
+    "nav.features":"Fonctionnalités","nav.community":"Communauté","nav.download":"Télécharger","nav.support":"Support",
+    "nav.login":"Connexion","nav.register":"S'inscrire",
+    "hero.badge":"Nouveau · Rejoignez 2M+ de membres",
+    "hero.title1":"Parlez, créez,","hero.title2":"connectez-vous.",
+    "hero.sub":"NexoChat est la plateforme communautaire nouvelle génération. Des serveurs privés aux grandes communautés — votre espace, vos règles.",
+    "hero.cta1":"Commencer gratuitement","hero.cta2":"Voir la démo",
+    "preview.placeholder":"Envoyer un message dans #général…",
+    "stats.users":"Utilisateurs actifs","stats.servers":"Serveurs créés","stats.messages":"Messages envoyés","stats.uptime":"Disponibilité",
+    "features.eyebrow":"POURQUOI NEXOCHAT","features.title":"Tout ce dont vous avez besoin,\nenfin réuni.",
+    "feat.chat.title":"Messagerie temps réel","feat.chat.desc":"Messages instantanés, réactions emoji, fils de discussion et markdown enrichi. La communication sans friction.",
+    "feat.voice.title":"Audio & Vidéo HD","feat.voice.desc":"Salons vocaux avec suppression de bruit, qualité cristalline et partage d'écran jusqu'à 4K.",
+    "feat.security.title":"Sécurité maximale","feat.security.desc":"Chiffrement E2E, authentification 2FA, rôles granulaires et modération automatique par IA.",
+    "feat.custom.title":"Personnalisation totale","feat.custom.desc":"Bots, intégrations, webhooks et thèmes. Adaptez NexoChat à votre communauté.",
+    "feat.global.title":"Mondial & multilingue","feat.global.desc":"Interface en 7 langues, traduction automatique des messages et CDN mondial pour la latence minimale.",
+    "feat.mobile.title":"Partout, tout le temps","feat.mobile.desc":"Application native iOS & Android, PWA et client desktop. Vos messages vous suivent partout.",
+    "cta.title":"Prêt à rejoindre la révolution ?","cta.sub":"Gratuit pour toujours pour les communautés. Plans Premium pour les pros.","cta.btn":"Créer mon compte gratuit",
+    "footer.privacy":"Confidentialité","footer.terms":"Conditions","footer.status":"Statut","footer.blog":"Blog",
+    "login.subtitle":"Bon retour parmi nous ! 👋","login.google":"Continuer avec Google","login.discord":"Continuer avec Discord","login.github":"Continuer avec GitHub",
+    "login.or":"ou par e-mail","login.email":"E-MAIL","login.password":"MOT DE PASSE","login.forgot":"Mot de passe oublié ?","login.btn":"Se connecter",
+    "login.noAccount":"Pas encore de compte ?","login.register":"S'inscrire","auth.back":"← Retour à l'accueil",
+    "register.subtitle":"Créez votre compte gratuit ✨","register.firstName":"PRÉNOM","register.lastName":"NOM",
+    "register.username":"NOM D'UTILISATEUR","register.terms":"J'accepte les conditions d'utilisation et la politique de confidentialité.",
+    "register.btn":"Créer mon compte","register.hasAccount":"Déjà un compte ?","register.login":"Se connecter",
+    "dash.welcome":"Bonjour, Alex ! 👋","dash.welcomeSub":"Voici ce qui se passe dans vos communautés.",
+    "dash.nav.main":"PRINCIPAL","dash.nav.home":"Accueil","dash.nav.friends":"Amis","dash.nav.dms":"Messages directs",
+    "dash.nav.explore":"Explorer","dash.nav.servers":"MES SERVEURS","dash.createServer":"Créer un serveur",
+    "dash.nav.settings":"Paramètres","dash.nav.logout":"Déconnexion",
+    "dash.card.servers":"Serveurs actifs","dash.card.serversSub":"Cliquez pour rejoindre","dash.card.activity":"Activité récente",
+    "dash.card.stats":"Vos stats","dash.stats.friends":"Amis","dash.stats.servers":"Serveurs","dash.stats.messages":"Messages","dash.stats.online":"En ligne",
+    "dash.goChat.title":"Rejoindre une discussion","dash.goChat.sub":"Vos amis vous attendent dans NexoHub","dash.goChat.btn":"Ouvrir le chat →",
+    "dash.friends.title":"Amis","dash.friends.add":"+ Ajouter un ami","dash.dms.title":"Messages directs",
+    "call.join":"Rejoindre","chat.members.online":"EN LIGNE — 12","chat.members.offline":"HORS LIGNE — 38",
+    "chat.hint":"Appuyez sur Entrée pour envoyer",
+    "vcall.ongoing":"Appel en cours — #vocal-général",
+    "modal.createServer.title":"Créer un serveur","modal.createServer.desc":"Votre serveur est l'endroit idéal pour vous retrouver avec vos amis.",
+    "modal.createServer.name":"NOM DU SERVEUR","modal.createServer.type":"TYPE","modal.createServer.public":"Public","modal.createServer.private":"Privé","modal.createServer.btn":"Créer le serveur",
+    "modal.addFriend.title":"Ajouter un ami","modal.addFriend.desc":"Entrez le nom d'utilisateur NexoChat de votre ami.","modal.addFriend.label":"NOM D'UTILISATEUR","modal.addFriend.btn":"Envoyer une demande",
+    "profile.back":"← Tableau de bord","profile.edit":"Modifier le profil","profile.bio":"Développeur passionné · Gamer le weekend · Fan de café ☕",
+    "profile.activity":"Activité de messagerie","profile.badges":"Badges & Récompenses","profile.info":"Informations",
+    "profile.member":"MEMBRE DEPUIS","profile.location":"LOCALISATION","profile.plan":"PLAN","profile.mutualServers":"Serveurs communs",
+    "settings.back":"← Retour","settings.change":"Modifier","settings.save":"Enregistrer les modifications",
+    "settings.section.account":"MON COMPTE","settings.section.app":"APPLICATION","settings.section.danger":"DANGER",
+    "settings.nav.profile":"Profil","settings.nav.account":"Compte & Sécurité","settings.nav.notifs":"Notifications",
+    "settings.nav.appearance":"Apparence","settings.nav.lang":"Langue","settings.nav.voice":"Voix & Vidéo","settings.nav.delete":"Supprimer le compte",
+    "settings.profile.title":"Profil","settings.profile.desc":"Modifiez vos informations publiques.",
+    "settings.profile.avatar":"Photo de profil","settings.profile.avatarDesc":"Formats : JPG, PNG, GIF · Max 8MB",
+    "settings.profile.displayName":"Nom d'affichage","settings.profile.bio":"Biographie","settings.profile.status":"Statut personnalisé","settings.profile.changeAvatar":"Changer",
+    "settings.account.title":"Compte & Sécurité","settings.account.desc":"Gérez vos identifiants et la sécurité de votre compte.",
+    "settings.account.password":"Mot de passe","settings.account.passwordDesc":"Dernière modification il y a 3 mois",
+    "settings.account.2fa":"Double authentification (2FA)","settings.account.2faDesc":"Protégez votre compte avec une application d'authentification.",
+    "settings.notifs.title":"Notifications","settings.notifs.desc":"Choisissez quand et comment être notifié.",
+    "settings.notifs.desktop":"Notifications bureau","settings.notifs.desktopDesc":"Afficher des notifications quand une fenêtre est inactive.",
+    "settings.notifs.sounds":"Sons","settings.notifs.soundsDesc":"Jouer des sons pour les nouveaux messages et appels.",
+    "settings.notifs.mentions":"Mentions uniquement","settings.notifs.mentionsDesc":"N'être notifié que lors de @mentions et DMs.",
+    "settings.appearance.title":"Apparence","settings.appearance.desc":"Personnalisez l'interface à votre goût.",
+    "settings.appearance.fontSize":"Taille du texte","settings.appearance.compact":"Mode compact","settings.appearance.compactDesc":"Réduire l'espacement entre les messages.",
+    "settings.appearance.animations":"Animations","settings.appearance.animationsDesc":"Activer les effets visuels animés.",
+    "settings.lang.title":"Langue de l'interface","settings.lang.desc":"Choisissez la langue d'affichage de NexoChat.",
+    "settings.voice.title":"Voix & Vidéo","settings.voice.desc":"Configurez votre micro et votre caméra.",
+    "settings.voice.input":"Microphone","settings.voice.output":"Sortie audio","settings.voice.noise":"Suppression de bruit","settings.voice.noiseDesc":"Filtre l'écho et les bruits de fond par IA.",
+  },
+  en: {
+    "nav.features":"Features","nav.community":"Community","nav.download":"Download","nav.support":"Support",
+    "nav.login":"Login","nav.register":"Sign Up",
+    "hero.badge":"New · Join 2M+ members",
+    "hero.title1":"Talk, create,","hero.title2":"connect.",
+    "hero.sub":"NexoChat is the next-gen community platform. From private servers to big communities — your space, your rules.",
+    "hero.cta1":"Start for free","hero.cta2":"View demo",
+    "preview.placeholder":"Send a message in #general…",
+    "stats.users":"Active users","stats.servers":"Servers created","stats.messages":"Messages sent","stats.uptime":"Uptime",
+    "features.eyebrow":"WHY NEXOCHAT","features.title":"Everything you need,\nfinally together.",
+    "feat.chat.title":"Real-time messaging","feat.chat.desc":"Instant messages, emoji reactions, threads and rich markdown. Communication without friction.",
+    "feat.voice.title":"HD Audio & Video","feat.voice.desc":"Voice channels with noise suppression, crystal-clear quality and screen sharing up to 4K.",
+    "feat.security.title":"Maximum security","feat.security.desc":"E2E encryption, 2FA, granular roles and AI-powered auto-moderation.",
+    "feat.custom.title":"Full customization","feat.custom.desc":"Bots, integrations, webhooks and themes. Tailor NexoChat to your community.",
+    "feat.global.title":"Global & multilingual","feat.global.desc":"Interface in 7 languages, auto-message translation and global CDN for minimum latency.",
+    "feat.mobile.title":"Everywhere, always","feat.mobile.desc":"Native iOS & Android app, PWA and desktop client. Your messages follow you everywhere.",
+    "cta.title":"Ready to join the revolution?","cta.sub":"Free forever for communities. Premium plans for pros.","cta.btn":"Create my free account",
+    "footer.privacy":"Privacy","footer.terms":"Terms","footer.status":"Status","footer.blog":"Blog",
+    "login.subtitle":"Welcome back! 👋","login.google":"Continue with Google","login.discord":"Continue with Discord","login.github":"Continue with GitHub",
+    "login.or":"or by email","login.email":"EMAIL","login.password":"PASSWORD","login.forgot":"Forgot password?","login.btn":"Sign in",
+    "login.noAccount":"No account yet?","login.register":"Sign up","auth.back":"← Back to home",
+    "register.subtitle":"Create your free account ✨","register.firstName":"FIRST NAME","register.lastName":"LAST NAME",
+    "register.username":"USERNAME","register.terms":"I agree to the terms of service and privacy policy.",
+    "register.btn":"Create my account","register.hasAccount":"Already have an account?","register.login":"Sign in",
+    "dash.welcome":"Hello, Alex! 👋","dash.welcomeSub":"Here's what's happening in your communities.",
+    "dash.nav.main":"MAIN","dash.nav.home":"Home","dash.nav.friends":"Friends","dash.nav.dms":"Direct Messages",
+    "dash.nav.explore":"Explore","dash.nav.servers":"MY SERVERS","dash.createServer":"Create a server",
+    "dash.nav.settings":"Settings","dash.nav.logout":"Logout",
+    "dash.card.servers":"Active servers","dash.card.serversSub":"Click to join","dash.card.activity":"Recent activity",
+    "dash.card.stats":"Your stats","dash.stats.friends":"Friends","dash.stats.servers":"Servers","dash.stats.messages":"Messages","dash.stats.online":"Online",
+    "dash.goChat.title":"Join a discussion","dash.goChat.sub":"Your friends are waiting in NexoHub","dash.goChat.btn":"Open chat →",
+    "dash.friends.title":"Friends","dash.friends.add":"+ Add friend","dash.dms.title":"Direct Messages",
+    "call.join":"Join","chat.members.online":"ONLINE — 12","chat.members.offline":"OFFLINE — 38",
+    "chat.hint":"Press Enter to send",
+    "vcall.ongoing":"Call in progress — #voice-general",
+    "modal.createServer.title":"Create a server","modal.createServer.desc":"Your server is the perfect place to hang out with your friends.",
+    "modal.createServer.name":"SERVER NAME","modal.createServer.type":"TYPE","modal.createServer.public":"Public","modal.createServer.private":"Private","modal.createServer.btn":"Create server",
+    "modal.addFriend.title":"Add a friend","modal.addFriend.desc":"Enter your friend's NexoChat username.","modal.addFriend.label":"USERNAME","modal.addFriend.btn":"Send friend request",
+    "profile.back":"← Dashboard","profile.edit":"Edit profile","profile.bio":"Passionate developer · Gamer on weekends · Coffee fan ☕",
+    "profile.activity":"Message activity","profile.badges":"Badges & Awards","profile.info":"Information",
+    "profile.member":"MEMBER SINCE","profile.location":"LOCATION","profile.plan":"PLAN","profile.mutualServers":"Mutual servers",
+    "settings.back":"← Back","settings.change":"Change","settings.save":"Save changes",
+    "settings.section.account":"MY ACCOUNT","settings.section.app":"APP","settings.section.danger":"DANGER",
+    "settings.nav.profile":"Profile","settings.nav.account":"Account & Security","settings.nav.notifs":"Notifications",
+    "settings.nav.appearance":"Appearance","settings.nav.lang":"Language","settings.nav.voice":"Voice & Video","settings.nav.delete":"Delete account",
+    "settings.profile.title":"Profile","settings.profile.desc":"Edit your public information.",
+    "settings.profile.avatar":"Profile picture","settings.profile.avatarDesc":"Formats: JPG, PNG, GIF · Max 8MB",
+    "settings.profile.displayName":"Display name","settings.profile.bio":"Bio","settings.profile.status":"Custom status","settings.profile.changeAvatar":"Change",
+    "settings.account.title":"Account & Security","settings.account.desc":"Manage your credentials and account security.",
+    "settings.account.password":"Password","settings.account.passwordDesc":"Last changed 3 months ago",
+    "settings.account.2fa":"Two-factor authentication (2FA)","settings.account.2faDesc":"Protect your account with an authenticator app.",
+    "settings.notifs.title":"Notifications","settings.notifs.desc":"Choose when and how to be notified.",
+    "settings.notifs.desktop":"Desktop notifications","settings.notifs.desktopDesc":"Show notifications when a window is inactive.",
+    "settings.notifs.sounds":"Sounds","settings.notifs.soundsDesc":"Play sounds for new messages and calls.",
+    "settings.notifs.mentions":"Mentions only","settings.notifs.mentionsDesc":"Only be notified for @mentions and DMs.",
+    "settings.appearance.title":"Appearance","settings.appearance.desc":"Customize the interface to your liking.",
+    "settings.appearance.fontSize":"Font size","settings.appearance.compact":"Compact mode","settings.appearance.compactDesc":"Reduce spacing between messages.",
+    "settings.appearance.animations":"Animations","settings.appearance.animationsDesc":"Enable animated visual effects.",
+    "settings.lang.title":"Interface language","settings.lang.desc":"Choose the display language for NexoChat.",
+    "settings.voice.title":"Voice & Video","settings.voice.desc":"Configure your microphone and camera.",
+    "settings.voice.input":"Microphone","settings.voice.output":"Audio output","settings.voice.noise":"Noise suppression","settings.voice.noiseDesc":"AI-powered echo and background noise filter.",
+  },
+  es: {
+    "nav.features":"Características","nav.community":"Comunidad","nav.download":"Descargar","nav.support":"Soporte",
+    "nav.login":"Iniciar sesión","nav.register":"Registrarse",
+    "hero.badge":"Nuevo · Únete a 2M+ miembros",
+    "hero.title1":"Habla, crea,","hero.title2":"conéctate.",
+    "hero.sub":"NexoChat es la plataforma comunitaria de nueva generación. Desde servidores privados a grandes comunidades — tu espacio, tus reglas.",
+    "hero.cta1":"Comenzar gratis","hero.cta2":"Ver demo",
+    "preview.placeholder":"Enviar un mensaje en #general…",
+    "stats.users":"Usuarios activos","stats.servers":"Servidores creados","stats.messages":"Mensajes enviados","stats.uptime":"Disponibilidad",
+    "features.eyebrow":"POR QUÉ NEXOCHAT","features.title":"Todo lo que necesitas,\nfinalmente unido.",
+    "feat.chat.title":"Mensajería en tiempo real","feat.chat.desc":"Mensajes instantáneos, reacciones emoji, hilos y markdown enriquecido.",
+    "feat.voice.title":"Audio y Video HD","feat.voice.desc":"Canales de voz con supresión de ruido y calidad cristalina.",
+    "feat.security.title":"Seguridad máxima","feat.security.desc":"Cifrado E2E, 2FA y moderación automática por IA.",
+    "feat.custom.title":"Personalización total","feat.custom.desc":"Bots, integraciones y webhooks para tu comunidad.",
+    "feat.global.title":"Global y multilingüe","feat.global.desc":"Interfaz en 7 idiomas y CDN global.",
+    "feat.mobile.title":"En todas partes, siempre","feat.mobile.desc":"App nativa iOS & Android y cliente de escritorio.",
+    "cta.title":"¿Listo para unirte?","cta.sub":"Gratis para comunidades. Planes Premium para profesionales.","cta.btn":"Crear mi cuenta gratis",
+    "footer.privacy":"Privacidad","footer.terms":"Términos","footer.status":"Estado","footer.blog":"Blog",
+    "login.subtitle":"¡Bienvenido de nuevo! 👋","login.google":"Continuar con Google","login.discord":"Continuar con Discord","login.github":"Continuar con GitHub",
+    "login.or":"o por correo","login.email":"CORREO","login.password":"CONTRASEÑA","login.forgot":"¿Olvidaste tu contraseña?","login.btn":"Iniciar sesión",
+    "login.noAccount":"¿No tienes cuenta?","login.register":"Registrarse","auth.back":"← Volver al inicio",
+    "register.subtitle":"Crea tu cuenta gratis ✨","register.firstName":"NOMBRE","register.lastName":"APELLIDO",
+    "register.username":"NOMBRE DE USUARIO","register.terms":"Acepto los términos de uso y la política de privacidad.",
+    "register.btn":"Crear mi cuenta","register.hasAccount":"¿Ya tienes cuenta?","register.login":"Iniciar sesión",
+    "dash.welcome":"¡Hola, Alex! 👋","dash.welcomeSub":"Esto es lo que pasa en tus comunidades.",
+    "dash.nav.main":"PRINCIPAL","dash.nav.home":"Inicio","dash.nav.friends":"Amigos","dash.nav.dms":"Mensajes directos",
+    "dash.nav.explore":"Explorar","dash.nav.servers":"MIS SERVIDORES","dash.createServer":"Crear servidor",
+    "dash.nav.settings":"Configuración","dash.nav.logout":"Cerrar sesión",
+    "dash.card.servers":"Servidores activos","dash.card.serversSub":"Haz clic para unirte","dash.card.activity":"Actividad reciente",
+    "dash.card.stats":"Tus estadísticas","dash.stats.friends":"Amigos","dash.stats.servers":"Servidores","dash.stats.messages":"Mensajes","dash.stats.online":"En línea",
+    "dash.goChat.title":"Unirse a un chat","dash.goChat.sub":"Tus amigos te esperan en NexoHub","dash.goChat.btn":"Abrir chat →",
+    "dash.friends.title":"Amigos","dash.friends.add":"+ Agregar amigo","dash.dms.title":"Mensajes directos",
+    "call.join":"Unirse","chat.members.online":"EN LÍNEA — 12","chat.members.offline":"DESCONECTADO — 38",
+    "chat.hint":"Presiona Enter para enviar","vcall.ongoing":"Llamada en curso",
+    "modal.createServer.title":"Crear servidor","modal.createServer.desc":"Tu servidor es el lugar ideal para reunirte con amigos.",
+    "modal.createServer.name":"NOMBRE DEL SERVIDOR","modal.createServer.type":"TIPO","modal.createServer.public":"Público","modal.createServer.private":"Privado","modal.createServer.btn":"Crear servidor",
+    "modal.addFriend.title":"Agregar amigo","modal.addFriend.desc":"Ingresa el nombre de usuario NexoChat de tu amigo.","modal.addFriend.label":"NOMBRE DE USUARIO","modal.addFriend.btn":"Enviar solicitud",
+    "profile.back":"← Tablero","profile.edit":"Editar perfil","profile.bio":"Desarrollador apasionado · Gamer los fines de semana ☕",
+    "profile.activity":"Actividad de mensajes","profile.badges":"Insignias","profile.info":"Información",
+    "profile.member":"MIEMBRO DESDE","profile.location":"UBICACIÓN","profile.plan":"PLAN","profile.mutualServers":"Servidores en común",
+    "settings.back":"← Volver","settings.change":"Cambiar","settings.save":"Guardar cambios",
+    "settings.section.account":"MI CUENTA","settings.section.app":"APLICACIÓN","settings.section.danger":"PELIGRO",
+    "settings.nav.profile":"Perfil","settings.nav.account":"Cuenta y Seguridad","settings.nav.notifs":"Notificaciones",
+    "settings.nav.appearance":"Apariencia","settings.nav.lang":"Idioma","settings.nav.voice":"Voz y Video","settings.nav.delete":"Eliminar cuenta",
+    "settings.profile.title":"Perfil","settings.profile.desc":"Edita tu información pública.",
+    "settings.profile.avatar":"Foto de perfil","settings.profile.avatarDesc":"Formatos: JPG, PNG, GIF · Máx 8MB",
+    "settings.profile.displayName":"Nombre de pantalla","settings.profile.bio":"Biografía","settings.profile.status":"Estado personalizado","settings.profile.changeAvatar":"Cambiar",
+    "settings.account.title":"Cuenta y Seguridad","settings.account.desc":"Gestiona tus credenciales.",
+    "settings.account.password":"Contraseña","settings.account.passwordDesc":"Último cambio hace 3 meses",
+    "settings.account.2fa":"Autenticación de dos factores","settings.account.2faDesc":"Protege tu cuenta con una app de autenticación.",
+    "settings.notifs.title":"Notificaciones","settings.notifs.desc":"Elige cuándo y cómo ser notificado.",
+    "settings.notifs.desktop":"Notificaciones de escritorio","settings.notifs.desktopDesc":"Mostrar notificaciones cuando la ventana está inactiva.",
+    "settings.notifs.sounds":"Sonidos","settings.notifs.soundsDesc":"Reproducir sonidos para mensajes y llamadas.",
+    "settings.notifs.mentions":"Solo menciones","settings.notifs.mentionsDesc":"Notificar solo para @menciones y DMs.",
+    "settings.appearance.title":"Apariencia","settings.appearance.desc":"Personaliza la interfaz.",
+    "settings.appearance.fontSize":"Tamaño de fuente","settings.appearance.compact":"Modo compacto","settings.appearance.compactDesc":"Reducir espaciado entre mensajes.",
+    "settings.appearance.animations":"Animaciones","settings.appearance.animationsDesc":"Activar efectos visuales animados.",
+    "settings.lang.title":"Idioma de la interfaz","settings.lang.desc":"Elige el idioma de NexoChat.",
+    "settings.voice.title":"Voz y Video","settings.voice.desc":"Configura tu micrófono y cámara.",
+    "settings.voice.input":"Micrófono","settings.voice.output":"Salida de audio","settings.voice.noise":"Supresión de ruido","settings.voice.noiseDesc":"Filtro de eco y ruido de fondo por IA.",
+  },
+  de: {
+    "nav.features":"Funktionen","nav.community":"Community","nav.download":"Herunterladen","nav.support":"Support",
+    "nav.login":"Anmelden","nav.register":"Registrieren",
+    "hero.badge":"Neu · Tritt 2M+ Mitgliedern bei",
+    "hero.title1":"Rede, erstelle,","hero.title2":"verbinde dich.",
+    "hero.sub":"NexoChat ist die Next-Gen-Community-Plattform. Von privaten Servern bis zu großen Communities — dein Raum, deine Regeln.",
+    "hero.cta1":"Kostenlos starten","hero.cta2":"Demo ansehen",
+    "preview.placeholder":"Nachricht in #allgemein senden…",
+    "stats.users":"Aktive Nutzer","stats.servers":"Erstellte Server","stats.messages":"Gesendete Nachrichten","stats.uptime":"Verfügbarkeit",
+    "features.eyebrow":"WARUM NEXOCHAT","features.title":"Alles was du brauchst,\nendlich vereint.",
+    "feat.chat.title":"Echtzeit-Messaging","feat.chat.desc":"Sofortnachrichten, Emoji-Reaktionen, Threads und reichhaltiges Markdown.",
+    "feat.voice.title":"HD-Audio & Video","feat.voice.desc":"Sprachkanäle mit Rauschunterdrückung und kristallklarer Qualität.",
+    "feat.security.title":"Maximale Sicherheit","feat.security.desc":"E2E-Verschlüsselung, 2FA und KI-Auto-Moderation.",
+    "feat.custom.title":"Vollständige Anpassung","feat.custom.desc":"Bots, Integrationen und Webhooks für deine Community.",
+    "feat.global.title":"Global & mehrsprachig","feat.global.desc":"Interface in 7 Sprachen und globales CDN.",
+    "feat.mobile.title":"Überall, jederzeit","feat.mobile.desc":"Native iOS & Android App und Desktop-Client.",
+    "cta.title":"Bereit der Revolution beizutreten?","cta.sub":"Kostenlos für Communities. Premium-Pläne für Profis.","cta.btn":"Kostenloses Konto erstellen",
+    "footer.privacy":"Datenschutz","footer.terms":"Bedingungen","footer.status":"Status","footer.blog":"Blog",
+    "login.subtitle":"Willkommen zurück! 👋","login.google":"Mit Google fortfahren","login.discord":"Mit Discord fortfahren","login.github":"Mit GitHub fortfahren",
+    "login.or":"oder per E-Mail","login.email":"E-MAIL","login.password":"PASSWORT","login.forgot":"Passwort vergessen?","login.btn":"Anmelden",
+    "login.noAccount":"Noch kein Konto?","login.register":"Registrieren","auth.back":"← Zurück zur Startseite",
+    "register.subtitle":"Erstelle dein kostenloses Konto ✨","register.firstName":"VORNAME","register.lastName":"NACHNAME",
+    "register.username":"BENUTZERNAME","register.terms":"Ich akzeptiere die Nutzungsbedingungen und Datenschutzrichtlinie.",
+    "register.btn":"Konto erstellen","register.hasAccount":"Bereits ein Konto?","register.login":"Anmelden",
+    "dash.welcome":"Hallo, Alex! 👋","dash.welcomeSub":"Hier ist was in deinen Communities passiert.",
+    "dash.nav.main":"HAUPTMENÜ","dash.nav.home":"Startseite","dash.nav.friends":"Freunde","dash.nav.dms":"Direktnachrichten",
+    "dash.nav.explore":"Entdecken","dash.nav.servers":"MEINE SERVER","dash.createServer":"Server erstellen",
+    "dash.nav.settings":"Einstellungen","dash.nav.logout":"Abmelden",
+    "dash.card.servers":"Aktive Server","dash.card.serversSub":"Klicken zum Beitreten","dash.card.activity":"Letzte Aktivität",
+    "dash.card.stats":"Deine Stats","dash.stats.friends":"Freunde","dash.stats.servers":"Server","dash.stats.messages":"Nachrichten","dash.stats.online":"Online",
+    "dash.goChat.title":"Einem Chat beitreten","dash.goChat.sub":"Deine Freunde warten in NexoHub","dash.goChat.btn":"Chat öffnen →",
+    "dash.friends.title":"Freunde","dash.friends.add":"+ Freund hinzufügen","dash.dms.title":"Direktnachrichten",
+    "call.join":"Beitreten","chat.members.online":"ONLINE — 12","chat.members.offline":"OFFLINE — 38",
+    "chat.hint":"Enter drücken zum Senden","vcall.ongoing":"Anruf läuft",
+    "modal.createServer.title":"Server erstellen","modal.createServer.desc":"Dein Server ist der ideale Ort um mit Freunden zusammenzukommen.",
+    "modal.createServer.name":"SERVER-NAME","modal.createServer.type":"TYP","modal.createServer.public":"Öffentlich","modal.createServer.private":"Privat","modal.createServer.btn":"Server erstellen",
+    "modal.addFriend.title":"Freund hinzufügen","modal.addFriend.desc":"Gib den NexoChat-Benutzernamen deines Freundes ein.","modal.addFriend.label":"BENUTZERNAME","modal.addFriend.btn":"Freundschaftsanfrage senden",
+    "profile.back":"← Dashboard","profile.edit":"Profil bearbeiten","profile.bio":"Leidenschaftlicher Entwickler · Gamer am Wochenende ☕",
+    "profile.activity":"Nachrichtenaktivität","profile.badges":"Abzeichen","profile.info":"Informationen",
+    "profile.member":"MITGLIED SEIT","profile.location":"ORT","profile.plan":"PLAN","profile.mutualServers":"Gemeinsame Server",
+    "settings.back":"← Zurück","settings.change":"Ändern","settings.save":"Änderungen speichern",
+    "settings.section.account":"MEIN KONTO","settings.section.app":"APP","settings.section.danger":"GEFAHR",
+    "settings.nav.profile":"Profil","settings.nav.account":"Konto & Sicherheit","settings.nav.notifs":"Benachrichtigungen",
+    "settings.nav.appearance":"Erscheinungsbild","settings.nav.lang":"Sprache","settings.nav.voice":"Stimme & Video","settings.nav.delete":"Konto löschen",
+    "settings.profile.title":"Profil","settings.profile.desc":"Öffentliche Informationen bearbeiten.",
+    "settings.profile.avatar":"Profilbild","settings.profile.avatarDesc":"Formate: JPG, PNG, GIF · Max 8MB",
+    "settings.profile.displayName":"Anzeigename","settings.profile.bio":"Biografie","settings.profile.status":"Benutzerdefinierter Status","settings.profile.changeAvatar":"Ändern",
+    "settings.account.title":"Konto & Sicherheit","settings.account.desc":"Anmeldedaten verwalten.",
+    "settings.account.password":"Passwort","settings.account.passwordDesc":"Zuletzt geändert vor 3 Monaten",
+    "settings.account.2fa":"Zwei-Faktor-Authentifizierung","settings.account.2faDesc":"Konto mit einer Authentifizierungs-App schützen.",
+    "settings.notifs.title":"Benachrichtigungen","settings.notifs.desc":"Wähle wann und wie du benachrichtigt wirst.",
+    "settings.notifs.desktop":"Desktop-Benachrichtigungen","settings.notifs.desktopDesc":"Benachrichtigungen anzeigen wenn ein Fenster inaktiv ist.",
+    "settings.notifs.sounds":"Töne","settings.notifs.soundsDesc":"Töne für neue Nachrichten und Anrufe abspielen.",
+    "settings.notifs.mentions":"Nur Erwähnungen","settings.notifs.mentionsDesc":"Nur bei @Erwähnungen und DMs benachrichtigen.",
+    "settings.appearance.title":"Erscheinungsbild","settings.appearance.desc":"Interface anpassen.",
+    "settings.appearance.fontSize":"Schriftgröße","settings.appearance.compact":"Kompaktmodus","settings.appearance.compactDesc":"Abstand zwischen Nachrichten reduzieren.",
+    "settings.appearance.animations":"Animationen","settings.appearance.animationsDesc":"Animierte visuelle Effekte aktivieren.",
+    "settings.lang.title":"Sprache der Benutzeroberfläche","settings.lang.desc":"Anzeigesprache für NexoChat wählen.",
+    "settings.voice.title":"Stimme & Video","settings.voice.desc":"Mikrofon und Kamera konfigurieren.",
+    "settings.voice.input":"Mikrofon","settings.voice.output":"Audioausgabe","settings.voice.noise":"Rauschunterdrückung","settings.voice.noiseDesc":"KI-gestützter Echo- und Hintergrundgeräuschfilter.",
+  },
+  it: {
+    "nav.features":"Funzionalità","nav.community":"Comunità","nav.download":"Scarica","nav.support":"Supporto",
+    "nav.login":"Accedi","nav.register":"Registrati",
+    "hero.badge":"Nuovo · Unisciti a 2M+ membri",
+    "hero.title1":"Parla, crea,","hero.title2":"connettiti.",
+    "hero.sub":"NexoChat è la piattaforma comunitaria di nuova generazione. Il tuo spazio, le tue regole.",
+    "hero.cta1":"Inizia gratis","hero.cta2":"Vedi la demo",
+    "preview.placeholder":"Invia un messaggio in #generale…",
+    "stats.users":"Utenti attivi","stats.servers":"Server creati","stats.messages":"Messaggi inviati","stats.uptime":"Disponibilità",
+    "features.eyebrow":"PERCHÉ NEXOCHAT","features.title":"Tutto ciò di cui hai bisogno,\nfinalmente riunito.",
+    "feat.chat.title":"Messaggistica in tempo reale","feat.chat.desc":"Messaggi istantanei, reazioni emoji, thread e markdown ricco.",
+    "feat.voice.title":"Audio e Video HD","feat.voice.desc":"Canali vocali con soppressione del rumore e qualità cristallina.",
+    "feat.security.title":"Sicurezza massima","feat.security.desc":"Crittografia E2E, 2FA e moderazione automatica AI.",
+    "feat.custom.title":"Personalizzazione totale","feat.custom.desc":"Bot, integrazioni e webhook per la tua community.",
+    "feat.global.title":"Globale e multilingue","feat.global.desc":"Interfaccia in 7 lingue e CDN globale.",
+    "feat.mobile.title":"Ovunque, sempre","feat.mobile.desc":"App nativa iOS e Android e client desktop.",
+    "cta.title":"Pronto a unirti alla rivoluzione?","cta.sub":"Gratuito per le community. Piani Premium per i professionisti.","cta.btn":"Crea il mio account gratuito",
+    "footer.privacy":"Privacy","footer.terms":"Termini","footer.status":"Stato","footer.blog":"Blog",
+    "login.subtitle":"Bentornato! 👋","login.google":"Continua con Google","login.discord":"Continua con Discord","login.github":"Continua con GitHub",
+    "login.or":"o tramite email","login.email":"EMAIL","login.password":"PASSWORD","login.forgot":"Password dimenticata?","login.btn":"Accedi",
+    "login.noAccount":"Non hai ancora un account?","login.register":"Registrati","auth.back":"← Torna alla home",
+    "register.subtitle":"Crea il tuo account gratuito ✨","register.firstName":"NOME","register.lastName":"COGNOME",
+    "register.username":"NOME UTENTE","register.terms":"Accetto i termini di utilizzo e la politica sulla privacy.",
+    "register.btn":"Crea il mio account","register.hasAccount":"Hai già un account?","register.login":"Accedi",
+    "dash.welcome":"Ciao, Alex! 👋","dash.welcomeSub":"Ecco cosa sta succedendo nelle tue community.",
+    "dash.nav.main":"PRINCIPALE","dash.nav.home":"Home","dash.nav.friends":"Amici","dash.nav.dms":"Messaggi diretti",
+    "dash.nav.explore":"Esplora","dash.nav.servers":"I MIEI SERVER","dash.createServer":"Crea un server",
+    "dash.nav.settings":"Impostazioni","dash.nav.logout":"Disconnetti",
+    "dash.card.servers":"Server attivi","dash.card.serversSub":"Clicca per unirti","dash.card.activity":"Attività recente",
+    "dash.card.stats":"Le tue statistiche","dash.stats.friends":"Amici","dash.stats.servers":"Server","dash.stats.messages":"Messaggi","dash.stats.online":"Online",
+    "dash.goChat.title":"Unisciti a una discussione","dash.goChat.sub":"I tuoi amici ti aspettano in NexoHub","dash.goChat.btn":"Apri chat →",
+    "dash.friends.title":"Amici","dash.friends.add":"+ Aggiungi amico","dash.dms.title":"Messaggi diretti",
+    "call.join":"Unisciti","chat.members.online":"ONLINE — 12","chat.members.offline":"OFFLINE — 38",
+    "chat.hint":"Premi Invio per inviare","vcall.ongoing":"Chiamata in corso",
+    "modal.createServer.title":"Crea un server","modal.createServer.desc":"Il tuo server è il posto perfetto per ritrovarti con gli amici.",
+    "modal.createServer.name":"NOME SERVER","modal.createServer.type":"TIPO","modal.createServer.public":"Pubblico","modal.createServer.private":"Privato","modal.createServer.btn":"Crea server",
+    "modal.addFriend.title":"Aggiungi un amico","modal.addFriend.desc":"Inserisci il nome utente NexoChat del tuo amico.","modal.addFriend.label":"NOME UTENTE","modal.addFriend.btn":"Invia richiesta di amicizia",
+    "profile.back":"← Dashboard","profile.edit":"Modifica profilo","profile.bio":"Sviluppatore appassionato · Gamer nel weekend ☕",
+    "profile.activity":"Attività messaggi","profile.badges":"Distintivi","profile.info":"Informazioni",
+    "profile.member":"MEMBRO DAL","profile.location":"POSIZIONE","profile.plan":"PIANO","profile.mutualServers":"Server in comune",
+    "settings.back":"← Indietro","settings.change":"Modifica","settings.save":"Salva modifiche",
+    "settings.section.account":"IL MIO ACCOUNT","settings.section.app":"APP","settings.section.danger":"PERICOLO",
+    "settings.nav.profile":"Profilo","settings.nav.account":"Account e Sicurezza","settings.nav.notifs":"Notifiche",
+    "settings.nav.appearance":"Aspetto","settings.nav.lang":"Lingua","settings.nav.voice":"Voce e Video","settings.nav.delete":"Elimina account",
+    "settings.profile.title":"Profilo","settings.profile.desc":"Modifica le tue informazioni pubbliche.",
+    "settings.profile.avatar":"Foto profilo","settings.profile.avatarDesc":"Formati: JPG, PNG, GIF · Max 8MB",
+    "settings.profile.displayName":"Nome visualizzato","settings.profile.bio":"Biografia","settings.profile.status":"Stato personalizzato","settings.profile.changeAvatar":"Cambia",
+    "settings.account.title":"Account e Sicurezza","settings.account.desc":"Gestisci le tue credenziali.",
+    "settings.account.password":"Password","settings.account.passwordDesc":"Ultima modifica 3 mesi fa",
+    "settings.account.2fa":"Autenticazione a due fattori","settings.account.2faDesc":"Proteggi il tuo account con un'app di autenticazione.",
+    "settings.notifs.title":"Notifiche","settings.notifs.desc":"Scegli quando e come essere notificato.",
+    "settings.notifs.desktop":"Notifiche desktop","settings.notifs.desktopDesc":"Mostra notifiche quando una finestra è inattiva.",
+    "settings.notifs.sounds":"Suoni","settings.notifs.soundsDesc":"Riproduci suoni per nuovi messaggi e chiamate.",
+    "settings.notifs.mentions":"Solo menzioni","settings.notifs.mentionsDesc":"Notificare solo per @menzioni e DM.",
+    "settings.appearance.title":"Aspetto","settings.appearance.desc":"Personalizza l'interfaccia.",
+    "settings.appearance.fontSize":"Dimensione testo","settings.appearance.compact":"Modalità compatta","settings.appearance.compactDesc":"Riduci la spaziatura tra i messaggi.",
+    "settings.appearance.animations":"Animazioni","settings.appearance.animationsDesc":"Attiva effetti visivi animati.",
+    "settings.lang.title":"Lingua interfaccia","settings.lang.desc":"Scegli la lingua di visualizzazione di NexoChat.",
+    "settings.voice.title":"Voce e Video","settings.voice.desc":"Configura il tuo microfono e la fotocamera.",
+    "settings.voice.input":"Microfono","settings.voice.output":"Uscita audio","settings.voice.noise":"Soppressione rumore","settings.voice.noiseDesc":"Filtro eco e rumori di fondo AI.",
+  },
+  pt: {
+    "nav.features":"Recursos","nav.community":"Comunidade","nav.download":"Baixar","nav.support":"Suporte",
+    "nav.login":"Entrar","nav.register":"Cadastrar",
+    "hero.badge":"Novo · Junte-se a 2M+ membros",
+    "hero.title1":"Fale, crie,","hero.title2":"conecte-se.",
+    "hero.sub":"NexoChat é a plataforma comunitária de nova geração. Seu espaço, suas regras.",
+    "hero.cta1":"Começar grátis","hero.cta2":"Ver demo",
+    "preview.placeholder":"Enviar mensagem em #geral…",
+    "stats.users":"Usuários ativos","stats.servers":"Servidores criados","stats.messages":"Mensagens enviadas","stats.uptime":"Disponibilidade",
+    "features.eyebrow":"POR QUE NEXOCHAT","features.title":"Tudo que você precisa,\nfinalmente reunido.",
+    "feat.chat.title":"Mensagens em tempo real","feat.chat.desc":"Mensagens instantâneas, reações emoji e markdown rico.",
+    "feat.voice.title":"Áudio e Vídeo HD","feat.voice.desc":"Canais de voz com supressão de ruído e qualidade cristalina.",
+    "feat.security.title":"Segurança máxima","feat.security.desc":"Criptografia E2E, 2FA e moderação automática por IA.",
+    "feat.custom.title":"Personalização total","feat.custom.desc":"Bots, integrações e webhooks para sua comunidade.",
+    "feat.global.title":"Global e multilíngue","feat.global.desc":"Interface em 7 idiomas e CDN global.",
+    "feat.mobile.title":"Em todo lugar, sempre","feat.mobile.desc":"App nativo iOS e Android e cliente desktop.",
+    "cta.title":"Pronto para se juntar?","cta.sub":"Gratuito para comunidades. Planos Premium para profissionais.","cta.btn":"Criar minha conta grátis",
+    "footer.privacy":"Privacidade","footer.terms":"Termos","footer.status":"Status","footer.blog":"Blog",
+    "login.subtitle":"Bem-vindo de volta! 👋","login.google":"Continuar com Google","login.discord":"Continuar com Discord","login.github":"Continuar com GitHub",
+    "login.or":"ou por e-mail","login.email":"E-MAIL","login.password":"SENHA","login.forgot":"Esqueceu a senha?","login.btn":"Entrar",
+    "login.noAccount":"Não tem conta?","login.register":"Cadastrar","auth.back":"← Voltar ao início",
+    "register.subtitle":"Crie sua conta grátis ✨","register.firstName":"NOME","register.lastName":"SOBRENOME",
+    "register.username":"NOME DE USUÁRIO","register.terms":"Aceito os termos de uso e política de privacidade.",
+    "register.btn":"Criar minha conta","register.hasAccount":"Já tem conta?","register.login":"Entrar",
+    "dash.welcome":"Olá, Alex! 👋","dash.welcomeSub":"Veja o que está acontecendo em suas comunidades.",
+    "dash.nav.main":"PRINCIPAL","dash.nav.home":"Início","dash.nav.friends":"Amigos","dash.nav.dms":"Mensagens diretas",
+    "dash.nav.explore":"Explorar","dash.nav.servers":"MEUS SERVIDORES","dash.createServer":"Criar servidor",
+    "dash.nav.settings":"Configurações","dash.nav.logout":"Sair",
+    "dash.card.servers":"Servidores ativos","dash.card.serversSub":"Clique para entrar","dash.card.activity":"Atividade recente",
+    "dash.card.stats":"Suas estatísticas","dash.stats.friends":"Amigos","dash.stats.servers":"Servidores","dash.stats.messages":"Mensagens","dash.stats.online":"Online",
+    "dash.goChat.title":"Entrar em uma discussão","dash.goChat.sub":"Seus amigos estão esperando no NexoHub","dash.goChat.btn":"Abrir chat →",
+    "dash.friends.title":"Amigos","dash.friends.add":"+ Adicionar amigo","dash.dms.title":"Mensagens diretas",
+    "call.join":"Entrar","chat.members.online":"ONLINE — 12","chat.members.offline":"OFFLINE — 38",
+    "chat.hint":"Pressione Enter para enviar","vcall.ongoing":"Chamada em andamento",
+    "modal.createServer.title":"Criar servidor","modal.createServer.desc":"Seu servidor é o lugar ideal para se reunir com amigos.",
+    "modal.createServer.name":"NOME DO SERVIDOR","modal.createServer.type":"TIPO","modal.createServer.public":"Público","modal.createServer.private":"Privado","modal.createServer.btn":"Criar servidor",
+    "modal.addFriend.title":"Adicionar amigo","modal.addFriend.desc":"Digite o nome de usuário NexoChat do seu amigo.","modal.addFriend.label":"NOME DE USUÁRIO","modal.addFriend.btn":"Enviar solicitação de amizade",
+    "profile.back":"← Painel","profile.edit":"Editar perfil","profile.bio":"Desenvolvedor apaixonado · Gamer nos fins de semana ☕",
+    "profile.activity":"Atividade de mensagens","profile.badges":"Emblemas","profile.info":"Informações",
+    "profile.member":"MEMBRO DESDE","profile.location":"LOCALIZAÇÃO","profile.plan":"PLANO","profile.mutualServers":"Servidores em comum",
+    "settings.back":"← Voltar","settings.change":"Alterar","settings.save":"Salvar alterações",
+    "settings.section.account":"MINHA CONTA","settings.section.app":"APLICATIVO","settings.section.danger":"PERIGO",
+    "settings.nav.profile":"Perfil","settings.nav.account":"Conta e Segurança","settings.nav.notifs":"Notificações",
+    "settings.nav.appearance":"Aparência","settings.nav.lang":"Idioma","settings.nav.voice":"Voz e Vídeo","settings.nav.delete":"Excluir conta",
+    "settings.profile.title":"Perfil","settings.profile.desc":"Edite suas informações públicas.",
+    "settings.profile.avatar":"Foto de perfil","settings.profile.avatarDesc":"Formatos: JPG, PNG, GIF · Máx 8MB",
+    "settings.profile.displayName":"Nome de exibição","settings.profile.bio":"Biografia","settings.profile.status":"Status personalizado","settings.profile.changeAvatar":"Alterar",
+    "settings.account.title":"Conta e Segurança","settings.account.desc":"Gerencie suas credenciais.",
+    "settings.account.password":"Senha","settings.account.passwordDesc":"Última alteração há 3 meses",
+    "settings.account.2fa":"Autenticação de dois fatores","settings.account.2faDesc":"Proteja sua conta com um app de autenticação.",
+    "settings.notifs.title":"Notificações","settings.notifs.desc":"Escolha quando e como ser notificado.",
+    "settings.notifs.desktop":"Notificações de desktop","settings.notifs.desktopDesc":"Mostrar notificações quando a janela está inativa.",
+    "settings.notifs.sounds":"Sons","settings.notifs.soundsDesc":"Reproduzir sons para novas mensagens e chamadas.",
+    "settings.notifs.mentions":"Apenas menções","settings.notifs.mentionsDesc":"Notificar apenas para @menções e DMs.",
+    "settings.appearance.title":"Aparência","settings.appearance.desc":"Personalize a interface.",
+    "settings.appearance.fontSize":"Tamanho da fonte","settings.appearance.compact":"Modo compacto","settings.appearance.compactDesc":"Reduzir espaçamento entre mensagens.",
+    "settings.appearance.animations":"Animações","settings.appearance.animationsDesc":"Ativar efeitos visuais animados.",
+    "settings.lang.title":"Idioma da interface","settings.lang.desc":"Escolha o idioma de exibição do NexoChat.",
+    "settings.voice.title":"Voz e Vídeo","settings.voice.desc":"Configure seu microfone e câmera.",
+    "settings.voice.input":"Microfone","settings.voice.output":"Saída de áudio","settings.voice.noise":"Supressão de ruído","settings.voice.noiseDesc":"Filtro de eco e ruído de fundo por IA.",
+  },
+  ar: {
+    "nav.features":"الميزات","nav.community":"المجتمع","nav.download":"تحميل","nav.support":"الدعم",
+    "nav.login":"تسجيل الدخول","nav.register":"إنشاء حساب",
+    "hero.badge":"جديد · انضم لأكثر من 2 مليون عضو",
+    "hero.title1":"تحدث، ابتكر،","hero.title2":"تواصل.",
+    "hero.sub":"NexoChat منصة المجتمع من الجيل القادم. مساحتك، قواعدك.",
+    "hero.cta1":"ابدأ مجاناً","hero.cta2":"شاهد العرض التوضيحي",
+    "preview.placeholder":"أرسل رسالة في #عام…",
+    "stats.users":"مستخدمون نشطون","stats.servers":"خوادم تم إنشاؤها","stats.messages":"رسائل مرسلة","stats.uptime":"وقت التشغيل",
+    "features.eyebrow":"لماذا NEXOCHAT","features.title":"كل ما تحتاجه،\nمجتمعاً أخيراً.",
+    "feat.chat.title":"مراسلة فورية","feat.chat.desc":"رسائل فورية وتفاعلات الرموز التعبيرية والخيوط وMarkdown الغني.",
+    "feat.voice.title":"صوت وفيديو عالي الدقة","feat.voice.desc":"قنوات صوتية بإلغاء الضوضاء وجودة كريستالية.",
+    "feat.security.title":"أقصى درجات الأمان","feat.security.desc":"تشفير E2E ومصادقة ثنائية ومعتدل تلقائي بالذكاء الاصطناعي.",
+    "feat.custom.title":"تخصيص كامل","feat.custom.desc":"بوتات وتكاملات وخطافات ويب لمجتمعك.",
+    "feat.global.title":"عالمي ومتعدد اللغات","feat.global.desc":"واجهة بـ 7 لغات وشبكة CDN عالمية.",
+    "feat.mobile.title":"في كل مكان، دائماً","feat.mobile.desc":"تطبيق أصلي لـ iOS و Android وعميل سطح مكتب.",
+    "cta.title":"هل أنت مستعد للانضمام إلى الثورة؟","cta.sub":"مجاني للأبد للمجتمعات. خطط بريميوم للمحترفين.","cta.btn":"إنشاء حسابي المجاني",
+    "footer.privacy":"الخصوصية","footer.terms":"الشروط","footer.status":"الحالة","footer.blog":"المدونة",
+    "login.subtitle":"مرحباً بعودتك! 👋","login.google":"المتابعة مع Google","login.discord":"المتابعة مع Discord","login.github":"المتابعة مع GitHub",
+    "login.or":"أو عبر البريد الإلكتروني","login.email":"البريد الإلكتروني","login.password":"كلمة المرور","login.forgot":"نسيت كلمة المرور؟","login.btn":"تسجيل الدخول",
+    "login.noAccount":"ليس لديك حساب؟","login.register":"إنشاء حساب","auth.back":"← العودة للرئيسية",
+    "register.subtitle":"أنشئ حسابك المجاني ✨","register.firstName":"الاسم الأول","register.lastName":"اسم العائلة",
+    "register.username":"اسم المستخدم","register.terms":"أوافق على شروط الاستخدام وسياسة الخصوصية.",
+    "register.btn":"إنشاء حسابي","register.hasAccount":"لديك حساب بالفعل؟","register.login":"تسجيل الدخول",
+    "dash.welcome":"مرحباً، Alex! 👋","dash.welcomeSub":"إليك ما يحدث في مجتمعاتك.",
+    "dash.nav.main":"الرئيسية","dash.nav.home":"الرئيسية","dash.nav.friends":"الأصدقاء","dash.nav.dms":"رسائل مباشرة",
+    "dash.nav.explore":"استكشاف","dash.nav.servers":"خوادمي","dash.createServer":"إنشاء خادم",
+    "dash.nav.settings":"الإعدادات","dash.nav.logout":"تسجيل الخروج",
+    "dash.card.servers":"الخوادم النشطة","dash.card.serversSub":"انقر للانضمام","dash.card.activity":"النشاط الأخير",
+    "dash.card.stats":"إحصائياتك","dash.stats.friends":"أصدقاء","dash.stats.servers":"خوادم","dash.stats.messages":"رسائل","dash.stats.online":"متصل",
+    "dash.goChat.title":"الانضمام إلى محادثة","dash.goChat.sub":"أصدقاؤك ينتظرونك في NexoHub","dash.goChat.btn":"فتح الدردشة →",
+    "dash.friends.title":"الأصدقاء","dash.friends.add":"+ إضافة صديق","dash.dms.title":"رسائل مباشرة",
+    "call.join":"انضمام","chat.members.online":"متصل — 12","chat.members.offline":"غير متصل — 38",
+    "chat.hint":"اضغط Enter للإرسال","vcall.ongoing":"مكالمة جارية",
+    "modal.createServer.title":"إنشاء خادم","modal.createServer.desc":"خادمك هو المكان المثالي للتجمع مع أصدقائك.",
+    "modal.createServer.name":"اسم الخادم","modal.createServer.type":"النوع","modal.createServer.public":"عام","modal.createServer.private":"خاص","modal.createServer.btn":"إنشاء الخادم",
+    "modal.addFriend.title":"إضافة صديق","modal.addFriend.desc":"أدخل اسم مستخدم NexoChat لصديقك.","modal.addFriend.label":"اسم المستخدم","modal.addFriend.btn":"إرسال طلب صداقة",
+    "profile.back":"← لوحة التحكم","profile.edit":"تعديل الملف الشخصي","profile.bio":"مطور متحمس · لاعب في عطلات نهاية الأسبوع ☕",
+    "profile.activity":"نشاط الرسائل","profile.badges":"الشارات","profile.info":"معلومات",
+    "profile.member":"عضو منذ","profile.location":"الموقع","profile.plan":"الخطة","profile.mutualServers":"خوادم مشتركة",
+    "settings.back":"← رجوع","settings.change":"تغيير","settings.save":"حفظ التغييرات",
+    "settings.section.account":"حسابي","settings.section.app":"التطبيق","settings.section.danger":"خطر",
+    "settings.nav.profile":"الملف الشخصي","settings.nav.account":"الحساب والأمان","settings.nav.notifs":"الإشعارات",
+    "settings.nav.appearance":"المظهر","settings.nav.lang":"اللغة","settings.nav.voice":"الصوت والفيديو","settings.nav.delete":"حذف الحساب",
+    "settings.profile.title":"الملف الشخصي","settings.profile.desc":"تعديل معلوماتك العامة.",
+    "settings.profile.avatar":"صورة الملف الشخصي","settings.profile.avatarDesc":"الصيغ: JPG، PNG، GIF · حد أقصى 8MB",
+    "settings.profile.displayName":"اسم العرض","settings.profile.bio":"السيرة الذاتية","settings.profile.status":"الحالة المخصصة","settings.profile.changeAvatar":"تغيير",
+    "settings.account.title":"الحساب والأمان","settings.account.desc":"إدارة بيانات اعتمادك.",
+    "settings.account.password":"كلمة المرور","settings.account.passwordDesc":"آخر تغيير منذ 3 أشهر",
+    "settings.account.2fa":"المصادقة الثنائية","settings.account.2faDesc":"احمِ حسابك بتطبيق المصادقة.",
+    "settings.notifs.title":"الإشعارات","settings.notifs.desc":"اختر متى وكيف يتم إشعارك.",
+    "settings.notifs.desktop":"إشعارات سطح المكتب","settings.notifs.desktopDesc":"عرض الإشعارات عند عدم نشاط النافذة.",
+    "settings.notifs.sounds":"الأصوات","settings.notifs.soundsDesc":"تشغيل أصوات للرسائل والمكالمات الجديدة.",
+    "settings.notifs.mentions":"المذكورات فقط","settings.notifs.mentionsDesc":"الإشعار فقط عند @الإشارات والرسائل المباشرة.",
+    "settings.appearance.title":"المظهر","settings.appearance.desc":"تخصيص الواجهة.",
+    "settings.appearance.fontSize":"حجم الخط","settings.appearance.compact":"الوضع المضغوط","settings.appearance.compactDesc":"تقليل التباعد بين الرسائل.",
+    "settings.appearance.animations":"الرسوم المتحركة","settings.appearance.animationsDesc":"تفعيل التأثيرات البصرية المتحركة.",
+    "settings.lang.title":"لغة الواجهة","settings.lang.desc":"اختر لغة عرض NexoChat.",
+    "settings.voice.title":"الصوت والفيديو","settings.voice.desc":"ضبط الميكروفون والكاميرا.",
+    "settings.voice.input":"الميكروفون","settings.voice.output":"مخرج الصوت","settings.voice.noise":"إلغاء الضوضاء","settings.voice.noiseDesc":"فلتر الصدى والضوضاء بالذكاء الاصطناعي.",
+  }
+};
+
+/* ============================================================
+   APP STATE
+============================================================ */
+const state = {
+  currentLang: 'fr',
+  currentPage: 'landing',
+  currentServer: 'NexoHub',
+  currentChannel: 'général',
+  messages: [],
+  typingTimer: null,
+  vcallActive: false,
+  vcallSeconds: 0,
+  vcallTimer: null,
+  micMuted: false,
+  camOff: false,
+  serverType: 'public',
+  servers: [
+    { name: 'NexoHub', emoji: '⚡', gradient: '#5865F2,#7C3AED', members: 2341 },
+    { name: 'Gaming Zone', emoji: '🎮', gradient: '#22C55E,#16a34a', members: 856 },
+    { name: 'Music Lounge', emoji: '🎵', gradient: '#F59E0B,#d97706', members: 423 }
+  ],
+  friends: [
+    { name: 'Léa', handle: 'lea#2891', emoji: '🐺', color: '#22C55E,#16a34a', status: 'online' },
+    { name: 'Max', handle: 'max#5512', emoji: '🦁', color: '#F59E0B,#d97706', status: 'online' },
+    { name: 'Sara', handle: 'sara#3341', emoji: '🦋', color: '#06b6d4,#0891b2', status: 'online' },
+    { name: 'Tom', handle: 'tom#8823', emoji: '🦅', color: '#EF4444,#b91c1c', status: 'idle' },
+    { name: 'Nico', handle: 'nico#1105', emoji: '🐻', color: '#64748B,#475569', status: 'offline' },
+    { name: 'Emma', handle: 'emma#7734', emoji: '🦊', color: '#64748B,#475569', status: 'offline' }
+  ]
+};
+
+// Simulated messages per channel
+const DEMO_MESSAGES = {
+  'général': [
+    { author:'Léa', emoji:'🐺', color:'#22C55E,#16a34a', badge:'Modératrice', badgeColor:'var(--c-green)', time:'14:30', text:'Bonjour tout le monde ! 👋 Bienvenue sur NexoHub !', reactions:[{emoji:'👋',count:5,mine:false},{emoji:'❤️',count:3,mine:true}] },
+    { author:'Max', emoji:'🦁', color:'#F59E0B,#d97706', badge:'', badgeColor:'', time:'14:32', text:'Salut ! Le nouveau design de NexoChat est vraiment 🔥🔥', reactions:[{emoji:'🔥',count:7,mine:false}] },
+    { author:'Sara', emoji:'🦋', color:'#06b6d4,#0891b2', badge:'', badgeColor:'', time:'14:35', text:'Je viens de tester le partage d\'écran, c\'est incroyable ! La qualité est parfaite même en 4K.', reactions:[] },
+    { author:'Alex', emoji:'🦊', color:'#5865F2,#7C3AED', badge:'Admin', badgeColor:'var(--c-blue)', time:'14:40', text:'Merci à tous d\'être là ! N\'hésitez pas à explorer les différents salons. On a préparé des ressources sympa 😊', reactions:[{emoji:'🎉',count:12,mine:false},{emoji:'❤️',count:8,mine:true},{emoji:'👏',count:4,mine:false}] },
+    { author:'Léa', emoji:'🐺', color:'#22C55E,#16a34a', badge:'Modératrice', badgeColor:'var(--c-green)', time:'14:42', text:'Rappel : les règles du serveur sont dans #annonces. Amusez-vous bien !', reactions:[] },
+    { author:'Max', emoji:'🦁', color:'#F59E0B,#d97706', badge:'', badgeColor:'', time:'14:44', text:'Au fait, est-ce que quelqu\'un a essayé le salon vocal ? La qualité audio est vraiment top !', reactions:[{emoji:'🎙️',count:3,mine:false}] },
+  ],
+  'annonces': [
+    { author:'Alex', emoji:'🦊', color:'#5865F2,#7C3AED', badge:'Admin', badgeColor:'var(--c-blue)', time:'10:00', text:'📢 **NexoChat v2.0 est en ligne !** Nouvelles fonctionnalités : partage d\'écran 4K, threads, et bien plus.', reactions:[{emoji:'🎉',count:45,mine:false},{emoji:'🚀',count:23,mine:true}] },
+  ],
+  'mèmes': [
+    { author:'Max', emoji:'🦁', color:'#F59E0B,#d97706', badge:'', badgeColor:'', time:'13:15', text:'😂 Quand tu essaies de déboguer depuis 3h et que le problème c\'était un point-virgule manquant...', reactions:[{emoji:'💀',count:15,mine:false},{emoji:'😭',count:8,mine:true}] },
+    { author:'Sara', emoji:'🦋', color:'#06b6d4,#0891b2', badge:'', badgeColor:'', time:'13:20', text:'NexoChat > Discord 💅 (j\'ai dit ce que j\'ai dit)', reactions:[{emoji:'👑',count:20,mine:false},{emoji:'😂',count:11,mine:false}] },
+  ],
+  'ressources': [
+    { author:'Léa', emoji:'🐺', color:'#22C55E,#16a34a', badge:'Modératrice', badgeColor:'var(--c-green)', time:'09:00', text:'📚 Voici la liste des ressources utiles : documentation, tutoriels et guides pour bien démarrer sur NexoChat.', reactions:[] },
+  ],
+  'staff': [
+    { author:'Alex', emoji:'🦊', color:'#5865F2,#7C3AED', badge:'Admin', badgeColor:'var(--c-blue)', time:'08:00', text:'🔒 Canal réservé au staff. Réunion de modération ce soir à 21h.', reactions:[] },
+  ]
+};
+
+/* ============================================================
+   LANGUAGE SYSTEM
+============================================================ */
+const LANG_INFO = {
+  fr: { flag:'🇫🇷', name:'Français', dir:'ltr' },
+  en: { flag:'🇬🇧', name:'English', dir:'ltr' },
+  es: { flag:'🇪🇸', name:'Español', dir:'ltr' },
+  de: { flag:'🇩🇪', name:'Deutsch', dir:'ltr' },
+  it: { flag:'🇮🇹', name:'Italiano', dir:'ltr' },
+  pt: { flag:'🇵🇹', name:'Português', dir:'ltr' },
+  ar: { flag:'🇸🇦', name:'العربية', dir:'rtl' }
+};
+
+function detectLang() {
+  const saved = localStorage.getItem('nexo_lang');
+  if (saved && TRANSLATIONS[saved]) return saved;
+  const nav = (navigator.language || navigator.userLanguage || 'fr').split('-')[0].toLowerCase();
+  return TRANSLATIONS[nav] ? nav : 'fr';
+}
+
+function applyTranslations(lang) {
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = LANG_INFO[lang]?.dir || 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  // Update select
+  const sel = document.getElementById('langSelectNav');
+  if (sel) sel.value = lang;
+  // Update msg input placeholder
+  const msgInput = document.getElementById('msg-input');
+  if (msgInput) msgInput.placeholder = `Envoyer un message dans #${state.currentChannel}…`;
+}
+
+function changeLang(lang) {
+  state.currentLang = lang;
+  localStorage.setItem('nexo_lang', lang);
+  applyTranslations(lang);
+  buildLangGrid();
+  showToast('🌍 ' + LANG_INFO[lang].name, 'success');
+}
+
+function t(key) {
+  const trans = TRANSLATIONS[state.currentLang] || TRANSLATIONS.en;
+  return trans[key] || key;
+}
+
+/* ============================================================
+   PAGE NAVIGATION
+============================================================ */
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(`page-${page}`);
+  if (el) {
+    el.classList.add('active');
+    state.currentPage = page;
+    window.scrollTo(0, 0);
+  }
+  // Page-specific init
+  if (page === 'chat') initChatPage();
+  if (page === 'dashboard') initDashboard();
+  if (page === 'profile') initProfile();
+  if (page === 'settings') initSettings();
+}
+
+/* ============================================================
+   AUTH ACTIONS
+============================================================ */
+function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw = document.getElementById('loginPassword').value;
+  if (!email || !pw) { showToast('⚠️ Veuillez remplir tous les champs.', 'error'); return; }
+  showToast('✅ Connexion réussie !', 'success');
+  setTimeout(() => showPage('dashboard'), 800);
+}
+
+function handleRegister() {
+  const terms = document.getElementById('regTerms').checked;
+  const username = document.getElementById('regUsername').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pw = document.getElementById('regPassword').value;
+  if (!username || !email || !pw) { showToast('⚠️ Veuillez remplir tous les champs.', 'error'); return; }
+  if (!terms) { showToast('⚠️ Acceptez les conditions d\'utilisation.', 'error'); return; }
+  if (pw.length < 8) { showToast('⚠️ Mot de passe trop court (min. 8 caractères).', 'error'); return; }
+  showToast('🎉 Compte créé avec succès !', 'success');
+  setTimeout(() => showPage('dashboard'), 900);
+}
+
+function socialLogin(provider) {
+  showToast(`🔗 Connexion via ${provider}…`, 'success');
+  setTimeout(() => showPage('dashboard'), 1000);
+}
+
+function togglePassword(id) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+function initDashboard() {
+  renderFriendsList();
+  renderDMList();
+}
+
+function setDashTab(el, tabId) {
+  document.querySelectorAll('.dash-nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#page-dashboard [id^="tab-"]').forEach(t => t.classList.add('hidden'));
+  const tab = document.getElementById(tabId);
+  if (tab) tab.classList.remove('hidden');
+}
+
+function renderFriendsList() {
+  const el = document.getElementById('friendsList');
+  if (!el) return;
+  el.innerHTML = state.friends.map(f => `
+    <div class="member-item" onclick="openDM('${f.name}')">
+      <div class="member-avatar" style="background:linear-gradient(135deg,${f.color})">${f.emoji}
+        <div class="member-status" style="background:${f.status==='online'?'var(--c-green)':f.status==='idle'?'var(--c-yellow)':'var(--c-text3)'}"></div>
+      </div>
+      <div>
+        <div class="member-name">${f.name}</div>
+        <div class="member-activity">${f.handle}</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openDM('${f.name}')">💬</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDMList() {
+  const el = document.getElementById('dmList');
+  if (!el) return;
+  el.innerHTML = state.friends.slice(0,4).map(f => `
+    <div class="member-item" onclick="showPage('chat')">
+      <div class="member-avatar" style="background:linear-gradient(135deg,${f.color})">${f.emoji}
+        <div class="member-status" style="background:${f.status==='online'?'var(--c-green)':'var(--c-text3)'}"></div>
+      </div>
+      <div style="flex:1;">
+        <div class="member-name">${f.name}</div>
+        <div class="member-activity" style="font-size:.78rem;">Cliquez pour ouvrir la conversation</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openDM(name) {
+  showToast(`💬 Ouverture de la conversation avec ${name}…`, 'success');
+  setTimeout(() => showPage('chat'), 500);
+}
+
+/* ============================================================
+   CHAT PAGE
+============================================================ */
+function initChatPage() {
+  renderMessages(state.currentChannel);
+  buildEmojiPicker();
+}
+
+function selectServer(el, serverName) {
+  document.querySelectorAll('.srv-icon').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  state.currentServer = serverName;
+  document.getElementById('chServerName').textContent = serverName;
+}
+
+function selectChannel(el, channelName) {
+  document.querySelectorAll('.ch-item').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  // Remove unread badge
+  const badge = el.querySelector('.ch-unread');
+  if (badge) badge.remove();
+  state.currentChannel = channelName;
+  document.getElementById('currentChannelName').textContent = channelName;
+  const topics = {
+    'général': 'Discussions générales du serveur — Soyez respectueux ✨',
+    'annonces': 'Annonces officielles du serveur 📢',
+    'mèmes': 'Zone libre — Partagez vos mèmes 😂',
+    'ressources': 'Liens utiles et documentation 📚',
+    'staff': '🔒 Accès réservé au staff'
+  };
+  document.getElementById('currentChannelTopic').textContent = topics[channelName] || '';
+  const inp = document.getElementById('msg-input');
+  if (inp) inp.placeholder = `Envoyer un message dans #${channelName}…`;
+  renderMessages(channelName);
+}
+
+function renderMessages(channel) {
+  const area = document.getElementById('messagesArea');
+  if (!area) return;
+  const msgs = [...(DEMO_MESSAGES[channel] || []), ...(state.messages.filter(m => m.channel === channel))];
+  area.innerHTML = '';
+  if (msgs.length === 0) {
+    area.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--c-text3);">
+      <div style="font-size:3rem;margin-bottom:12px;">#</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--c-text2);">Bienvenue dans #${channel} !</div>
+      <div style="font-size:.875rem;margin-top:6px;">C'est le début de ce salon. Dites bonjour !</div>
+    </div>`;
+    return;
+  }
+  // Group consecutive messages from same author
+  const dividerTime = '14:30';
+  area.insertAdjacentHTML('beforeend', `<div class="msg-divider">Aujourd'hui</div>`);
+  msgs.forEach((msg, idx) => {
+    const reactionsHtml = (msg.reactions || []).map(r => `
+      <button class="reaction ${r.mine ? 'mine' : ''}" onclick="toggleReaction(${idx},'${r.emoji}')" aria-label="${r.emoji} ${r.count} réactions">
+        ${r.emoji} <span class="reaction-count">${r.count}</span>
+      </button>`).join('');
+    area.insertAdjacentHTML('beforeend', `
+      <div class="msg-group" data-msg-id="${idx}">
+        <div class="msg-avatar" style="background:linear-gradient(135deg,${msg.color})">${msg.emoji}</div>
+        <div class="msg-content">
+          <div class="msg-header">
+            <span class="msg-name" style="color:rgb(${msg.color.includes('22C')? '34,197,94' : msg.color.includes('5865')? '88,101,242' : msg.color.includes('F59')? '245,158,11' : msg.color.includes('06b')? '6,182,212' : '239,68,68'})">${msg.author}</span>
+            ${msg.badge ? `<span class="msg-badge" style="background:${msg.badgeColor}22;color:${msg.badgeColor}">${msg.badge}</span>` : ''}
+            <span class="msg-time">${msg.time}</span>
+          </div>
+          <div class="msg-text">${msg.text}</div>
+          ${reactionsHtml ? `<div class="msg-reactions">${reactionsHtml}<button class="reaction" onclick="addReaction(${idx})" aria-label="Ajouter une réaction">+ 😀</button></div>` : ''}
+        </div>
+        <div class="msg-actions">
+          <button class="icon-btn" title="Réagir" onclick="addReaction(${idx})">😀</button>
+          <button class="icon-btn" title="Répondre">↩️</button>
+          <button class="icon-btn" title="Plus" onclick="showMsgContext(event,${idx})">⋯</button>
+        </div>
+      </div>`);
+  });
+  area.scrollTop = area.scrollHeight;
+}
+
+function onMsgInput(el) {
+  // Auto-resize
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+  document.getElementById('sendBtn').disabled = el.value.trim() === '';
+  // Typing indicator
+  clearTimeout(state.typingTimer);
+  document.getElementById('typingIndicator').textContent = 'Léa est en train d\'écrire…';
+  state.typingTimer = setTimeout(() => {
+    document.getElementById('typingIndicator').textContent = '';
+  }, 2500);
+}
+
+function onMsgKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function sendMessage() {
+  const inp = document.getElementById('msg-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  const msg = {
+    author: 'Alex', emoji: '🦊', color: '#5865F2,#7C3AED',
+    badge: 'Admin', badgeColor: 'var(--c-blue)',
+    time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}),
+    text, reactions: [], channel: state.currentChannel
+  };
+  state.messages.push(msg);
+  inp.value = '';
+  inp.style.height = 'auto';
+  document.getElementById('sendBtn').disabled = true;
+  renderMessages(state.currentChannel);
+  // Simulate reply after 1-3s
+  if (Math.random() > 0.4) {
+    const delay = 1000 + Math.random() * 2000;
+    const repliers = [
+      { author:'Léa', emoji:'🐺', color:'#22C55E,#16a34a', badge:'Modératrice', badgeColor:'var(--c-green)' },
+      { author:'Max', emoji:'🦁', color:'#F59E0B,#d97706', badge:'', badgeColor:'' },
+      { author:'Sara', emoji:'🦋', color:'#06b6d4,#0891b2', badge:'', badgeColor:'' }
+    ];
+    const replies = ['Super ! 🎉', '👍 Totalement d\'accord !', '😂😂😂', 'Intéressant !', '🔥🔥', 'Exactement !', '✅ Noté !'];
+    const replier = repliers[Math.floor(Math.random() * repliers.length)];
+    document.getElementById('typingIndicator').textContent = `${replier.author} est en train d'écrire…`;
+    setTimeout(() => {
+      document.getElementById('typingIndicator').textContent = '';
+      state.messages.push({
+        ...replier,
+        time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}),
+        text: replies[Math.floor(Math.random() * replies.length)],
+        reactions: [], channel: state.currentChannel
+      });
+      renderMessages(state.currentChannel);
+    }, delay);
+  }
+}
+
+function searchMessages(query) {
+  if (!query) { renderMessages(state.currentChannel); return; }
+  const area = document.getElementById('messagesArea');
+  const all = [...(DEMO_MESSAGES[state.currentChannel] || []), ...state.messages.filter(m => m.channel === state.currentChannel)];
+  const filtered = all.filter(m => m.text.toLowerCase().includes(query.toLowerCase()));
+  area.innerHTML = filtered.length
+    ? `<div class="msg-divider">Résultats pour "${query}"</div>` + filtered.map(m => `<div class="msg-group"><div class="msg-avatar" style="background:linear-gradient(135deg,${m.color})">${m.emoji}</div><div class="msg-content"><div class="msg-header"><span class="msg-name">${m.author}</span><span class="msg-time">${m.time}</span></div><div class="msg-text">${m.text}</div></div></div>`).join('')
+    : `<div class="system-msg">Aucun résultat pour "${query}"</div>`;
+}
+
+function toggleReaction(msgIdx, emoji) {
+  showToast(`Réaction ${emoji} enregistrée !`, 'success');
+}
+function addReaction(msgIdx) {
+  toggleEmojiPicker();
+}
+
+function showMsgContext(e, idx) {
+  e.stopPropagation();
+  const menu = document.getElementById('contextMenu');
+  menu.innerHTML = `
+    <div class="context-item" onclick="copyMsg(${idx})">📋 Copier le message</div>
+    <div class="context-item" onclick="">↩️ Répondre</div>
+    <div class="context-item" onclick="">📌 Épingler</div>
+    <div class="context-separator"></div>
+    <div class="context-item danger" onclick="">🗑️ Supprimer</div>`;
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight - 180) + 'px';
+  menu.classList.remove('hidden');
+}
+function copyMsg(idx) {
+  hideContextMenu();
+  showToast('📋 Message copié !', 'success');
+}
+
+/* ============================================================
+   EMOJI PICKER
+============================================================ */
+const EMOJIS = ['😀','😂','🥰','😎','🤔','😢','😡','🥳','👍','👎','❤️','🔥','🎉','✅','⚠️','🚀','💯','🎮','🎵','🌍','💎','⚡','🏆','👑','💬','🙌','👏','🤝','💪','🦊','🐺','🦁','🦋','🦅','🐻','🎯','🔥','💥','✨','🌟'];
+
+function buildEmojiPicker() {
+  const picker = document.getElementById('emojiPicker');
+  if (!picker) return;
+  picker.innerHTML = EMOJIS.map(e => `<button class="emoji-btn" onclick="insertEmoji('${e}')" aria-label="${e}">${e}</button>`).join('');
+}
+
+function toggleEmojiPicker() {
+  const picker = document.getElementById('emojiPicker');
+  const toggle = document.getElementById('emojiToggle');
+  picker.classList.toggle('hidden');
+  toggle.setAttribute('aria-expanded', !picker.classList.contains('hidden'));
+}
+
+function insertEmoji(emoji) {
+  const inp = document.getElementById('msg-input');
+  inp.value += emoji;
+  inp.focus();
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('emojiPicker').classList.add('hidden');
+}
+
+/* ============================================================
+   VIDEO CALL
+============================================================ */
+function startCall(channelName) {
+  document.getElementById('vcallOverlay').classList.remove('hidden');
+  state.vcallActive = true;
+  state.vcallSeconds = 0;
+  clearInterval(state.vcallTimer);
+  state.vcallTimer = setInterval(() => {
+    state.vcallSeconds++;
+    const m = String(Math.floor(state.vcallSeconds / 60)).padStart(2,'0');
+    const s = String(state.vcallSeconds % 60).padStart(2,'0');
+    const el = document.getElementById('vcallTimer');
+    if (el) el.textContent = `${m}:${s}`;
+  }, 1000);
+  showToast(`📞 Salon vocal "${channelName}" rejoint !`, 'success');
+}
+
+function endVcall() {
+  document.getElementById('vcallOverlay').classList.add('hidden');
+  clearInterval(state.vcallTimer);
+  state.vcallActive = false;
+  showToast('📞 Appel terminé.', 'success');
+}
+
+function toggleVcall() {
+  document.getElementById('vcallOverlay').classList.add('hidden');
+}
+
+function toggleMic() {
+  state.micMuted = !state.micMuted;
+  const btn = document.getElementById('micBtn');
+  if (btn) {
+    btn.textContent = state.micMuted ? '🔇' : '🎙️';
+    btn.className = `vcall-btn ${state.micMuted ? 'muted' : 'normal'}`;
+  }
+  const tBtn = document.getElementById('micToggleBtn');
+  if (tBtn) tBtn.textContent = state.micMuted ? '🔇' : '🎙️';
+  showToast(state.micMuted ? '🔇 Micro désactivé' : '🎙️ Micro activé', 'success');
+}
+
+function toggleCam() {
+  state.camOff = !state.camOff;
+  const btn = document.getElementById('camBtn');
+  if (btn) {
+    btn.textContent = state.camOff ? '📵' : '📹';
+    btn.className = `vcall-btn ${state.camOff ? 'muted' : 'normal'}`;
+  }
+  const tBtn = document.getElementById('camToggleBtn');
+  if (tBtn) tBtn.textContent = state.camOff ? '📵' : '🎧';
+  showToast(state.camOff ? '📵 Caméra désactivée' : '📹 Caméra activée', 'success');
+}
+
+/* ============================================================
+   MODALS
+============================================================ */
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+function selectServerType(type) {
+  state.serverType = type;
+  document.getElementById('typePublic').classList.toggle('selected', type === 'public');
+  document.getElementById('typePrivate').classList.toggle('selected', type === 'private');
+}
+
+function createServer() {
+  const name = document.getElementById('newServerName').value.trim();
+  if (!name) { showToast('⚠️ Entrez un nom de serveur.', 'error'); return; }
+  state.servers.push({ name, emoji: '⚡', gradient: '#5865F2,#7C3AED', members: 1 });
+  closeModal('modalCreateServer');
+  document.getElementById('newServerName').value = '';
+  showToast(`✅ Serveur "${name}" créé !`, 'success');
+}
+
+function sendFriendRequest() {
+  const u = document.getElementById('friendUsername').value.trim();
+  if (!u) { showToast('⚠️ Entrez un nom d\'utilisateur.', 'error'); return; }
+  closeModal('modalAddFriend');
+  document.getElementById('friendUsername').value = '';
+  showToast(`✅ Demande envoyée à ${u} !`, 'success');
+}
+
+/* ============================================================
+   PROFILE
+============================================================ */
+function initProfile() {
+  buildActivityChart();
+}
+
+function buildActivityChart() {
+  const chart = document.getElementById('activityChart');
+  if (!chart) return;
+  chart.innerHTML = '';
+  for (let i = 0; i < 364; i++) {
+    const r = Math.random();
+    const level = r < 0.5 ? '' : r < 0.7 ? 'l1' : r < 0.85 ? 'l2' : r < 0.95 ? 'l3' : 'l4';
+    const cell = document.createElement('div');
+    cell.className = `chart-cell ${level}`;
+    cell.setAttribute('title', `${Math.floor(r * 50)} messages`);
+    chart.appendChild(cell);
+  }
+}
+
+/* ============================================================
+   SETTINGS
+============================================================ */
+function initSettings() {
+  buildLangGrid();
+}
+
+function buildLangGrid() {
+  const grid = document.getElementById('langGrid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(LANG_INFO).map(([code, info]) => `
+    <div class="lang-option ${state.currentLang === code ? 'selected' : ''}" onclick="changeLang('${code}')" role="radio" aria-checked="${state.currentLang === code}" tabindex="0">
+      <span class="lang-flag">${info.flag}</span>
+      <div class="lang-name">${info.name}</div>
+    </div>`).join('');
+}
+
+function switchSettingsSection(el, sectionId) {
+  document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+  const sec = document.getElementById(sectionId);
+  if (sec) sec.classList.add('active');
+}
+
+function toggleSwitch(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('on');
+  const isOn = el.classList.contains('on');
+  el.setAttribute('aria-checked', isOn);
+  showToast(isOn ? '✅ Activé' : '⚪ Désactivé', 'success');
+}
+
+function adjustFontSize(size) {
+  document.documentElement.style.setProperty('font-size', size + 'px');
+}
+
+function saveSettings() {
+  showToast('✅ Paramètres sauvegardés !', 'success');
+}
+
+function confirmDeleteAccount() {
+  if (confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.')) {
+    showToast('🗑️ Compte supprimé.', 'error');
+    setTimeout(() => showPage('landing'), 1500);
+  }
+}
+
+/* ============================================================
+   TOAST NOTIFICATIONS
+============================================================ */
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.setAttribute('role', 'alert');
+  toast.innerHTML = `<span class="toast-icon">${type === 'success' ? '✅' : '❌'}</span><span class="toast-text">${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; toast.style.transition = '.3s'; setTimeout(() => toast.remove(), 350); }, 3000);
+}
+
+/* ============================================================
+   CONTEXT MENU
+============================================================ */
+function hideContextMenu() {
+  document.getElementById('contextMenu').classList.add('hidden');
+}
+document.addEventListener('click', hideContextMenu);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { hideContextMenu(); document.getElementById('emojiPicker')?.classList.add('hidden'); } });
+
+/* ============================================================
+   ANIMATED STATS COUNTER
+============================================================ */
+function animateCounter(el, target, suffix = '') {
+  let start = 0;
+  const step = target / 60;
+  const timer = setInterval(() => {
+    start += step;
+    if (start >= target) { el.textContent = target.toLocaleString('fr-FR') + suffix; clearInterval(timer); }
+    else el.textContent = Math.floor(start).toLocaleString('fr-FR') + suffix;
+  }, 16);
+}
+
+/* ============================================================
+   INTERSECTION OBSERVER for animations
+============================================================ */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      if (el.id === 'statUsers') animateCounter(el, 2, 'M+');
+      if (el.id === 'statServers') animateCounter(el, 150, 'K+');
+      if (el.id === 'statMsgs') animateCounter(el, 50, 'M+');
+      observer.unobserve(el);
+    }
+  });
+}, { threshold: 0.3 });
+
+/* ============================================================
+   KEYBOARD NAVIGATION for lists
+============================================================ */
+document.addEventListener('keydown', e => {
+  if (e.target.matches('.dash-nav-item, .settings-nav-item, .lang-option') && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    e.target.click();
+  }
+});
+
+/* ============================================================
+   INIT
+============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  // Detect language
+  state.currentLang = detectLang();
+  applyTranslations(state.currentLang);
+
+  // Observe stats
+  ['statUsers','statServers','statMsgs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+
+  // Build emoji picker for chat page
+  buildEmojiPicker();
+
+  // Simulate real-time stat updates
+  setInterval(() => {
+    const el = document.getElementById('statMsgs');
+    if (el && state.currentPage === 'landing') {
+      const num = parseInt(el.textContent) || 50;
+      // keep static for now
+    }
+  }, 5000);
+
+  console.log('%c⚡ NexoChat', 'color:#5865F2;font-size:2rem;font-weight:900;');
+  console.log('%cPlatforme communautaire next-gen • v2.0.0', 'color:#94A3B8;');
+});
+</script>
+</body>
+</html>
